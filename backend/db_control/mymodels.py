@@ -14,8 +14,8 @@ class Users(Base):
     user_name: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(50))
     birthdate: Mapped[date] = mapped_column(Date)
-    address: Mapped[str] = mapped_column(String)
-    password: Mapped[str] = mapped_column(String)
+    address: Mapped[str] = mapped_column(String(50))
+    password: Mapped[str] = mapped_column(String(255))
     parent_child_class: Mapped[str] = mapped_column(String(50), nullable=False)
     family_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
 
@@ -23,22 +23,22 @@ class Users(Base):
 class Children(Base):
     __tablename__ = "children"
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    father_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
-    mather_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
+    father_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
+    mother_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
     relationship: Mapped[str] = mapped_column(String(50))
 
 
 class Parents(Base):
     __tablename__ = "parents"
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    parent_child_class: Mapped[str] = mapped_column(String(50))
+    parent_class: Mapped[str] = mapped_column(String(50))
 
 
 class Roadmaps(Base):
     __tablename__ = "roadmaps"
     roadmap_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    parent_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'))
-    item_id: Mapped[int] = mapped_column(Integer, ForeignKey('items.item_id'))
+    parent_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'), nullable=True)
+    item_id: Mapped[int] = mapped_column(Integer, ForeignKey('items.item_id'), nullable=True)
     item_input_num: Mapped[int] = mapped_column(Integer, nullable=True)
     item_state: Mapped[str] = mapped_column(String(50))
     item_updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -47,7 +47,7 @@ class Roadmaps(Base):
 class Items(Base):
     __tablename__ = "items"
     item_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    itme_name: Mapped[str] = mapped_column(String(50))
+    item_name: Mapped[str] = mapped_column(String(50))
 
 
 class PromtCategories(Base):
@@ -60,9 +60,7 @@ class GptPrompts(Base):
     __tablename__ = "gptprompts"
     prompt_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     item_id: Mapped[int] = mapped_column(Integer, ForeignKey('items.item_id'), nullable=True)
-    prompt_category_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey('promtcategories.prompt_category_id'), nullable=True
-    )
+    prompt_category_id: Mapped[int] = mapped_column(Integer, ForeignKey('promtcategories.prompt_category_id'), nullable=True)
     content: Mapped[str] = mapped_column(String)
 
 
