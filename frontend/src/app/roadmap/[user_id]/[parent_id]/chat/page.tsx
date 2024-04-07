@@ -10,7 +10,7 @@ import createChatRawData from "./createChatRawData";
 export default function Chat() {
   const router = useRouter();
   const params = useParams();
-  console.log(params.user_id, params.parent_id);
+  // console.log(params.user_id, params.parent_id);
   const [start_time, setStart_time] = useState<string>("");
   const [end_time, setEnd_time] = useState<string>("");
 
@@ -60,6 +60,23 @@ export default function Chat() {
       setText("");
     }
   }, [isRecording]);
+
+  useEffect(() => {
+    if (start_time < end_time) {
+      // 録音内容をChatPostsへ保存
+      const fetchChatPost = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          recording_start_datetime: start_time,
+          recording_end_datetime: end_time,
+        };
+        console.log(values);
+        createChatPost(values);
+      };
+      fetchChatPost();
+    }
+  }, [end_time]);
 
   useEffect(() => {
     if (!recognition) return;
