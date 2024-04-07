@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import getServerTime from "./getServerTime";
 import createChatPost from "./createChatPost";
+import createChatRawData from "./createChatRawData";
 
 export default function Chat() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const [text, setText] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
+  const [savetext, setSaveText] = useState<string>("");
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(
     null
   );
@@ -60,29 +62,13 @@ export default function Chat() {
   }, [isRecording]);
 
   useEffect(() => {
-    if (start_time < end_time) {
-      // 録音内容をChatPostsへ保存
-      const fetchChatPost = async () => {
-        const values = {
-          parent_user_id: params.parent_id,
-          child_user_id: params.user_id,
-          recording_start_datetime: start_time,
-          recording_end_datetime: end_time,
-        };
-        console.log(values);
-        createChatPost(values);
-      };
-      fetchChatPost();
-    }
-  }, [end_time]);
-
-  useEffect(() => {
     if (!recognition) return;
     recognition.onresult = (event) => {
       const results = event.results;
       for (let i = event.resultIndex; i < results.length; i++) {
         if (results[i].isFinal) {
           setText((prevText) => prevText + results[i][0].transcript);
+          setSaveText(results[i][0].transcript);
           setTranscript("");
         } else {
           setTranscript(results[i][0].transcript);
@@ -90,6 +76,22 @@ export default function Chat() {
       }
     };
   }, [recognition]);
+
+  useEffect(() => {
+    if (savetext == "") return;
+    else {
+      //結果をバックエンドへ送りたい
+      const fetchChatRawDatas = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          content: savetext,
+        };
+        createChatRawData(values);
+      };
+      fetchChatRawDatas();
+    }
+  }, [savetext]);
 
   return (
     <main>

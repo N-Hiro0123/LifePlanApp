@@ -1,4 +1,4 @@
-export default async function fetchChatPosts() {
+export default async function getServerTime() {
   const res = await fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + "/chatposts", {
     cache: "no-cache",
   });
