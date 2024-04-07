@@ -3,6 +3,7 @@ import platform
 
 print("platform", platform.uname())
 ##テスト
+##テスト2
 
 from sqlalchemy import create_engine, insert, delete, update, select
 import sqlalchemy
