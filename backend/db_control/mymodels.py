@@ -82,6 +82,15 @@ class ChatPosts(Base):
     recording_end_datetime: Mapped[date] = mapped_column(DateTime)
 
 
+class ChatPostsGPT(Base):
+    __tablename__ = "chatpostsgpt"
+    post_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    parent_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'))
+    child_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'))
+    content: Mapped[str] = mapped_column(String)
+    chatpost_created_at: Mapped[date] = mapped_column(DateTime)
+
+
 class ChatSummaries(Base):
     __tablename__ = "chatsummaries"
     chat_summary_id: Mapped[int] = mapped_column(Integer, primary_key=True)

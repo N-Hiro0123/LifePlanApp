@@ -231,6 +231,20 @@ for i in range(1, 7):
     values["item_id"] = i
     values["content"] = f"項目{i}の要約のプロンプト"
     InsertValue(mymodel, values)  # DBへ値を挿入
+##################################################################################
+# ChatPostsGPT　１回目
+
+created_at = datetime.utcnow()
+
+mymodel = mymodels.ChatPostsGPT
+values = {
+    # "post_id": 1,
+    "parent_user_id": 1,
+    "child_user_id": 2,
+    "content": "お父さんも将来について話したいと思っていはずです。頑張って",
+    "chatpost_created_at": created_at,
+}
+InsertValue(mymodel, values)  # DBへ値を挿入
 
 ##################################################################################
 # ChatRawDatas
@@ -266,13 +280,28 @@ recording_end = datetime.utcnow()
 
 mymodel = mymodels.ChatPosts
 values = {
-    # "post_id": 1,
+    # "post_id": 2,
     "parent_user_id": 1,
     "child_user_id": 2,
     "recording_start_datetime": recording_start,
     "recording_end_datetime": recording_end,
 }
 InsertValue(mymodel, values)  # DBへ値を挿入
+##################################################################################
+# ChatPostsGPT　２回目
+
+created_at = datetime.utcnow()
+
+mymodel = mymodels.ChatPostsGPT
+values = {
+    # "post_id": 1,
+    "parent_user_id": 1,
+    "child_user_id": 2,
+    "content": "よい会話のスタートが切れましたね",
+    "chatpost_created_at": created_at,
+}
+InsertValue(mymodel, values)  # DBへ値を挿入
+
 
 ##################################################################################
 # ChatSummaries
