@@ -4,6 +4,7 @@ import platform
 print("platform", platform.uname())
 ##テスト
 
+
 from sqlalchemy import create_engine, insert, delete, update, select
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker

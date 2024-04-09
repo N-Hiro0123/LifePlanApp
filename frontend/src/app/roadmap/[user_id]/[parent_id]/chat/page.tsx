@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import getServerTime from "./getServerTime";
 import createChatPost from "./createChatPost";
 import createChatRawData from "./createChatRawData";
+import getChatlogSmall from "./getChatlogSmall";
 
 export default function Chat() {
   const router = useRouter();
@@ -13,6 +14,9 @@ export default function Chat() {
   // console.log(params.user_id, params.parent_id);
   const [start_time, setStart_time] = useState<string>("");
   const [end_time, setEnd_time] = useState<string>("");
+  const [chatlogInfo, setChatlogInfo] = useState([]);
+  const [postComplete, setPostComplete] = useState(false); //投稿が完了したことを検出
+  const [postCount, setPostCount] = useState<number>(0); //投稿階数　履歴を取得する
 
   const [isRecording, setIsRecording] = useState(false);
   const [text, setText] = useState<string>("");
@@ -72,7 +76,10 @@ export default function Chat() {
           recording_end_datetime: end_time,
         };
         // console.log(values);
-        createChatPost(values);
+        const flag = await createChatPost(values);
+        console.log(postCount + "投稿直前");
+        setPostComplete(flag); // 投稿完了を確認
+        console.log(postCount + "投稿直後");
       };
       fetchChatPost();
     }
@@ -110,8 +117,43 @@ export default function Chat() {
     }
   }, [savetext]);
 
+  // 投稿が完了された時に会話履歴を更新する
+  useEffect(() => {
+    if (postComplete) {
+      setPostCount(postCount + 1); //投稿数をカウントアップ
+      const fetchGetChatlogSmall = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          count: postCount, //取得する最大履歴
+        };
+        const data = await getChatlogSmall(values);
+        await setChatlogInfo(data);
+      };
+      fetchGetChatlogSmall();
+      setPostComplete(false); // 投稿フラグを未完了に戻す
+    } else {
+      return;
+    }
+  }, [postComplete]);
+
   return (
     <main>
+      <div>
+        <h1>Chat Log</h1>
+        <ul>
+          {chatlogInfo.map((log, index) => (
+            <li key={index}>
+              <p>Posted by: {log.post_user}</p>
+              <p>Created At: {log.chatpost_created_at}</p>
+              <p>
+                Content: <strong>{log.content}</strong>
+              </p>
+              <br></br>
+            </li>
+          ))}
+        </ul>
+      </div>
       <button
         onClick={() => {
           setIsRecording((prev) => !prev);

@@ -9,6 +9,7 @@ const createChatPost = async (values) => {
   if (!res.ok) {
     throw new Error("Failed to create chatposts");
   }
+  return true;
 };
 
 export default createChatPost;
