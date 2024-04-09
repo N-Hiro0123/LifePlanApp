@@ -239,8 +239,8 @@ created_at = datetime.utcnow()
 mymodel = mymodels.ChatPostsGPT
 values = {
     # "post_id": 1,
-    "parent_user_id": 1,
-    "child_user_id": 2,
+    "parent_user_id": 2,
+    "child_user_id": 1,
     "content": "お父さんも将来について話したいと思っていはずです。頑張って",
     "chatpost_created_at": created_at,
 }
@@ -254,8 +254,8 @@ recording_start = datetime.utcnow()
 mymodel = mymodels.ChatRawDatas
 values = {
     # "chat_id": 1,
-    "parent_user_id": 1,
-    "child_user_id": 2,
+    "parent_user_id": 2,
+    "child_user_id": 1,
     "content": "会話１",
     # "created_at": ,
 }
@@ -281,8 +281,8 @@ recording_end = datetime.utcnow()
 mymodel = mymodels.ChatPosts
 values = {
     # "post_id": 2,
-    "parent_user_id": 1,
-    "child_user_id": 2,
+    "parent_user_id": 2,
+    "child_user_id": 1,
     "recording_start_datetime": recording_start,
     "recording_end_datetime": recording_end,
 }
@@ -295,8 +295,8 @@ created_at = datetime.utcnow()
 mymodel = mymodels.ChatPostsGPT
 values = {
     # "post_id": 1,
-    "parent_user_id": 1,
-    "child_user_id": 2,
+    "parent_user_id": 2,
+    "child_user_id": 1,
     "content": "よい会話のスタートが切れましたね",
     "chatpost_created_at": created_at,
 }
@@ -309,8 +309,8 @@ InsertValue(mymodel, values)  # DBへ値を挿入
 mymodel = mymodels.ChatSummaries
 values = {
     # "chat_summary_id": 1,
-    "parent_user_id": 1,
-    "child_user_id": 2,
+    "parent_user_id": 2,
+    "child_user_id": 1,
     "item_id": 1,
     "content": "要約結果",
     # "created_at": record_datetime,
@@ -327,8 +327,8 @@ for i in range(1, 7):
 mymodel = mymodels.ManualSummaries
 values = {
     # "manual_summary_id": 1,
-    "parent_user_id": 1,
-    "item_id": 2,
+    "parent_user_id": 2,
+    "item_id": 1,
     "content": "要約結果",
     # "updated_at": record_datetime,
 }

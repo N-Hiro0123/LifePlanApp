@@ -127,3 +127,30 @@ def read_chatrawdatas(mymodel, value):
         session.close()
 
     return df
+
+
+def read_chatpostsgpt(mymodel, values):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    parent_user_id = values.get("parent_user_id")
+    child_user_id = values.get("child_user_id")
+
+    # paret_user_id, child_user_idが一致するものを抽出
+    query = session.query(mymodel).filter(mymodel.parent_user_id == parent_user_id, mymodel.child_user_id == child_user_id)
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("ChatPostsGPTからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df

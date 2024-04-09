@@ -65,7 +65,7 @@ def create_chatpost():
 
 
 # ChatPostsから会話の開始と終了を読み込んで、ChatRawDatasの内容を整理してjson形式で返す
-@app.route("/chatrawdatas", methods=["GET"])
+@app.route("/chatlogall", methods=["POST"])
 def get_chatrawdata():
 
     values = request.get_json()
@@ -78,8 +78,16 @@ def get_chatrawdata():
     # ChatPostsから録音開始時間と録音終了時間をすべて取り込む
     chatposts_df = crud.read_chatposts(mymodels.ChatPosts, values)
 
-    result_dict_list = []  # 　整理後の履歴を
+    # ChatPostsGPTからGPTからの投稿内容と作成時間を取り込む
+    chatposts_gpt_df = crud.read_chatpostsgpt(mymodels.ChatPostsGPT, values)
+    # 使いたいカラムだけ取り出す
+    chatposts_gpt_df = chatposts_gpt_df[["chatpost_created_at", "content"]]
+    # "post_user"カラムを追加して、GPTの発言と分かるように"gpt"を入れておく
+    chatposts_gpt_df["post_user"] = "gpt"
 
+    result_dict_list = []  # 　整理後の履歴を格納する
+
+    # 開始時間と終了時間を使って、生データを整理する
     for i, chatpost_df in chatposts_df.iterrows():
         chatrawdatas_df = crud.read_chatrawdatas(mymodels.ChatRawDatas, chatpost_df)
 
@@ -87,22 +95,23 @@ def get_chatrawdata():
         for ii, chatrawdata_df in chatrawdatas_df.iterrows():
             contents = contents + chatrawdata_df["content"]
 
-        parent_user_id = chatpost_df["parent_user_id"]
-        child_user_id = chatpost_df["child_user_id"]
-        chatpost_created_at_str = chatpost_df["recording_end_datetime"].strftime('%Y-%m-%d %H:%M:%S.%f')
+        # content以外は必要なものだけ取り出す
 
-        result_dict_list.append(
-            {
-                "chatpost_created_at": chatpost_created_at_str,
-                # "parent_user_id": parent_user_id,
-                # "child_user_id": child_user_id,
-                "content": contents,
-            }
-        )
+        # parent_user_id = chatpost_df["parent_user_id"]
+        # child_user_id = chatpost_df["child_user_id"]
+        # 特に録音停止時間をチャット投稿時間とする
+        chatpost_created_at = chatpost_df["recording_end_datetime"]
 
-    print(result_dict_list)
-    result_json = json.dumps(result_dict_list, ensure_ascii=False)
+        result_dict_list.append({"chatpost_created_at": chatpost_created_at, "content": contents, "post_user": "user"})
+    # 整理したユーザー投稿内容をdfへ変換する
+    chatposts_user_df = pd.DataFrame(result_dict_list)
 
-    # result = chatrawdata_df.to_json(orient="records", force_ascii=False)
+    # ユーザー投稿とGPT投稿を一つにまとめて、投稿順に並べ替える
+    chatposts_all_df = pd.concat([chatposts_user_df, chatposts_gpt_df]).sort_values(by="chatpost_created_at")
+    # Datatimeを文字列に直す
+    chatposts_all_df["chatpost_created_at"] = chatposts_all_df["chatpost_created_at"].dt.strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    # 　Unicodeエスケープしない
+    result_json = chatposts_all_df.to_json(orient="records", force_ascii=False)
 
     return result_json, 200

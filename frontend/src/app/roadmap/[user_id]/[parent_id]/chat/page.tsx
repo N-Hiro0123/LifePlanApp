@@ -71,7 +71,7 @@ export default function Chat() {
           recording_start_datetime: start_time,
           recording_end_datetime: end_time,
         };
-        console.log(values);
+        // console.log(values);
         createChatPost(values);
       };
       fetchChatPost();
