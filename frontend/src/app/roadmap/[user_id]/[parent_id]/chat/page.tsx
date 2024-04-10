@@ -54,36 +54,19 @@ export default function Chat() {
       // 録音を停止
       recognition.stop();
       // 記録停止時間の取得
-      const fetchAndSetEndTime = async () => {
-        const server_time = await getServerTime();
-        setEnd_time(server_time);
-      };
-      fetchAndSetEndTime();
 
+      // 発話が止まっている時に停止ボタンを押すとここで終了時間を記録
+      if (savetext !== "") {
+        const fetchAndSetEndTime = async () => {
+          const server_time = await getServerTime();
+          setEnd_time(server_time);
+        };
+        fetchAndSetEndTime();
+      }
       // textを初期化
       setText("");
     }
   }, [isRecording]);
-
-  useEffect(() => {
-    if (start_time < end_time) {
-      // 録音内容をChatPostsへ保存
-      const fetchChatPost = async () => {
-        const values = {
-          parent_user_id: params.parent_id,
-          child_user_id: params.user_id,
-          recording_start_datetime: start_time,
-          recording_end_datetime: end_time,
-        };
-        // console.log(values);
-        const flag = await createChatPost(values);
-        console.log(postCount + "投稿直前");
-        setPostComplete(flag); // 投稿完了を確認
-        console.log(postCount + "投稿直後");
-      };
-      fetchChatPost();
-    }
-  }, [end_time]);
 
   useEffect(() => {
     if (!recognition) return;
@@ -101,6 +84,7 @@ export default function Chat() {
     };
   }, [recognition]);
 
+  // 認識結果が確定した時(savetext)にその内容をバックエンドへ送る
   useEffect(() => {
     if (savetext == "") return;
     else {
@@ -114,14 +98,60 @@ export default function Chat() {
         createChatRawData(values);
       };
       fetchChatRawDatas();
+      console.log(text + "何が表示されているでしょうか");
+
+      //発話中に終了ボタンを押したときはこちらの処理
+      // 録音が終了した時にtext=""となっているので終了時間を取得する
+      if (!isRecording) {
+        const fetchAndSetEndTime = async () => {
+          const server_time = await getServerTime();
+          setEnd_time(server_time);
+        };
+        fetchAndSetEndTime();
+        setText("");
+      }
     }
   }, [savetext]);
 
-  // 投稿が完了された時に会話履歴を更新する
+  useEffect(() => {
+    if (start_time < end_time) {
+      // 録音内容をChatPostsへ保存
+      const fetchChatPost = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          recording_start_datetime: start_time,
+          recording_end_datetime: end_time,
+        };
+        // console.log(values);
+        console.log(postCount + "投稿直前");
+        const flag = await createChatPost(values);
+        // setPostCount(postCount + 1); //投稿数をカウントアップ
+        setPostComplete(flag); // 投稿完了を確認
+        // console.log(postCount + "投稿直後");
+      };
+      fetchChatPost();
+      setSaveText(""); //投稿する内容を初期化する
+    }
+  }, [end_time]);
+
+  // 投稿が完了された時に、postCountを増やして、会話履歴を取得する
   useEffect(() => {
     if (postComplete) {
-      setPostCount(postCount + 1); //投稿数をカウントアップ
+      setPostCount((prevCount) => prevCount + 1);
+      console.log(postCount + "投稿時点");
+      setPostComplete(false); // 投稿フラグを未完了に戻す
+    } else {
+      return;
+    }
+  }, [postComplete]);
+
+  // 投稿が完了された時に、postCountを増やして、会話履歴を取得する
+  useEffect(() => {
+    if (postCount > 0) {
       const fetchGetChatlogSmall = async () => {
+        // setPostCount((prevCount) => prevCount + 1);
+        console.log(postCount + "投稿時点");
         const values = {
           parent_user_id: params.parent_id,
           child_user_id: params.user_id,
@@ -131,11 +161,10 @@ export default function Chat() {
         await setChatlogInfo(data);
       };
       fetchGetChatlogSmall();
-      setPostComplete(false); // 投稿フラグを未完了に戻す
     } else {
       return;
     }
-  }, [postComplete]);
+  }, [postCount]);
 
   return (
     <main>
