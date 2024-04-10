@@ -28,7 +28,7 @@ export default function Chatlog() {
       <ul>
         {chatlogInfo.map((log, index) => (
           <li key={index}>
-            <p>Posted by: {log.post_user}</p>
+            <p>Posted by: {log.role}</p>
             <p>Created At: {log.chatpost_created_at}</p>
             <p>
               Content: <strong>{log.content}</strong>

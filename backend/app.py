@@ -82,8 +82,8 @@ def get_chatrawdata():
     chatposts_gpt_df = crud.read_chatpostsgpt(mymodels.ChatPostsGPT, values)
     # 使いたいカラムだけ取り出す
     chatposts_gpt_df = chatposts_gpt_df[["chatpost_created_at", "content"]]
-    # "post_user"カラムを追加して、GPTの発言と分かるように"gpt"を入れておく
-    chatposts_gpt_df["post_user"] = "gpt"
+    # "role"カラムを追加して、GPTの発言と分かるように"assistant"を入れておく
+    chatposts_gpt_df["role"] = "assistant"
 
     result_dict_list = []  # 　整理後の履歴を格納する
 
@@ -102,7 +102,7 @@ def get_chatrawdata():
         # 特に録音停止時間をチャット投稿時間とする
         chatpost_created_at = chatpost_df["recording_end_datetime"]
 
-        result_dict_list.append({"chatpost_created_at": chatpost_created_at, "content": contents, "post_user": "user"})
+        result_dict_list.append({"chatpost_created_at": chatpost_created_at, "content": contents, "role": "user"})
     # 整理したユーザー投稿内容をdfへ変換する
     chatposts_user_df = pd.DataFrame(result_dict_list)
 
@@ -143,8 +143,8 @@ def get_chatrawdatasmall():
     chatposts_gpt_df = crud.read_chatpostsgpt(mymodels.ChatPostsGPT, values)
     # 使いたいカラムだけ取り出す
     chatposts_gpt_df = chatposts_gpt_df[["chatpost_created_at", "content"]]
-    # "post_user"カラムを追加して、GPTの発言と分かるように"gpt"を入れておく
-    chatposts_gpt_df["post_user"] = "gpt"
+    # "role"カラムを追加して、GPTの発言と分かるように"assistant"を入れておく
+    chatposts_gpt_df["role"] = "assistant"
 
     result_dict_list = []  # 　整理後の履歴を格納する
 
@@ -163,7 +163,7 @@ def get_chatrawdatasmall():
         # 特に録音停止時間をチャット投稿時間とする
         chatpost_created_at = chatpost_df["recording_end_datetime"]
 
-        result_dict_list.append({"chatpost_created_at": chatpost_created_at, "content": contents, "post_user": "user"})
+        result_dict_list.append({"chatpost_created_at": chatpost_created_at, "content": contents, "role": "user"})
     # 整理したユーザー投稿内容をdfへ変換する
     chatposts_user_df = pd.DataFrame(result_dict_list)
 
