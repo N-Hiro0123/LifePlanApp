@@ -191,6 +191,7 @@ def get_chatsummary():
 
     response = client.chat.completions.create(
         # model="gpt-4",
+        # model="gpt-4-1106-preview",
         model="gpt-3.5-turbo",
         response_format={"type": "json_object"},
         # messages=message_dict,
