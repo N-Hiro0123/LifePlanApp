@@ -4,6 +4,7 @@ import fetchRoadmap from "./fetchRoadmap";
 import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Roadmap() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function Roadmap() {
       setRoadmapInfo(roadmapData);
     };
     fetchAndSetRoadmap();
+    // item_idをitem_nameへ変換するmapを作成
     const map = createItemIdToNameMap(itemInfo);
     setItemIdToNameMap(map);
     console.log(map);
@@ -34,18 +36,29 @@ export default function Roadmap() {
 
   return (
     <div>
+      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
+        <p>
+          <strong>Chat**link**</strong>
+        </p>
+      </Link>
+      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chatlog`}>
+        <p>
+          <strong>Chatlog**link**</strong>
+        </p>
+      </Link>
       <h1>Roadmap</h1>
       <ul>
-        {/* {itemInfo.map((log, index) => (
-          <li key={index}>
-            <p>Item_id: {log.item_id}</p>
-            <p>input_num: {log.item_name}</p>
-            <br></br>
-          </li>
-        ))} */}
         {roadmapInfo.map((log, index) => (
           <li key={index}>
-            <p>Item_id: {itemIdToNameMap[log.item_id]}</p>
+            <Link
+              href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[log.item_id]}`}
+            >
+              <p>
+                <strong>
+                  Item_id --link--: {itemIdToNameMap[log.item_id]}
+                </strong>
+              </p>
+            </Link>
             <p>input_num: {log.item_input_num}</p>
             <p>State:{log.item_state}</p>
             <p>Update_At: {log.item_updated_at}</p>

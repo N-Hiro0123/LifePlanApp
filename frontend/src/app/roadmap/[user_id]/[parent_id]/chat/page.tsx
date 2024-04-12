@@ -7,6 +7,7 @@ import getServerTime from "./getServerTime";
 import createChatPost from "./createChatPost";
 import createChatRawData from "./createChatRawData";
 import getChatlogSmall from "./getChatlogSmall";
+import Link from "next/link";
 
 export default function Chat() {
   const router = useRouter();
@@ -169,6 +170,11 @@ export default function Chat() {
   return (
     <main>
       <div>
+        <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
+          <p>
+            <strong>Roadmap**link**</strong>
+          </p>
+        </Link>
         <h1>Chat Log</h1>
         <ul>
           {chatlogInfo.map((log, index) => (
