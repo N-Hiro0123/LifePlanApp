@@ -124,7 +124,7 @@ def get_chatrawdatasmall():
 # ChatPostsから会話の開始と終了を読み込んで、ChatRawDatasの内容を整理してjson形式で返す
 # countで指定された数だけ返す
 @app.route("/chatsummary", methods=["POST"])
-def get_chatsummary():
+def set_chatsummary():
 
     values_all = request.get_json()
     # values = {
@@ -142,10 +142,8 @@ def get_chatsummary():
 
     # ユーザーとGPTのチャット履歴を時間順に並べて、最新ものをcount数だけ取得する
     chatpost_small_df = readchatlog.readchalogsmall(values, count)
-
     # "role"と"content"だけ抜き出す
     message_df = chatpost_small_df[["role", "content"]]
-
     # systemメッセージを追加する
     system_message_df = pd.DataFrame(
         [
@@ -155,8 +153,7 @@ def get_chatsummary():
             }
         ]
     )
-
-    # 繋げたうえで、辞書形式で渡す
+    # 繋げたうえで、辞書形式にしてから、openAIのAPIへ渡す
     message_df = pd.concat([system_message_df, message_df])
     message_dict = message_df.to_dict(orient="records")
 
@@ -164,7 +161,7 @@ def get_chatsummary():
        
     あなたは終活アドバイザー、終活の専門家です。
     以下の会話から終活に関する特定の情報を抽出し、終活ロードマップに沿った順序でカテゴリー分けし、要約してください。
-    各カテゴリーに該当する内容がない場合は「なし」と回答してください。要約はそれぞれ200文字以内で行ってください。
+    各カテゴリーに該当する内容がない場合は「None」と回答してください。要約はそれぞれ200文字以内で行ってください。
     カテゴリーと順序:
     ライフプラン/自分史（学び、仕事、家族、住まい、趣味、旅行）
     資産・お金（口座情報、銀行名、証券会社名、保険会社名、不動産、支店名、金額、資産区分）
@@ -185,25 +182,58 @@ def get_chatsummary():
     お父さん、今日はちょっと話があって…。でも、その前にお父さんの好きなコーヒー淹れたよ。おお、それはありがたい。何の話だね？」実は終活の話と、もう一つ…。お父さんが若い頃によく話してくれた、海外旅行の話をもう一度聞きたくて。海外旅行か…。あの頃は冒険だったなあ。でも、なぜ急に？いや、だってお父さんの話、本当に面白いんだもの。でも、その前に終活のこと。遺言や葬儀の希望、遺産の話も含めて、ゆっくり話し合いたいんだ。そうか、終活の話か。それは大事なことだ。遺言については、特に古い家や土地のことをどうしてほしいか書き記しておきたいな。それから、葬儀のスタイルも。お父さんがどんな風に見送られたいのか、具体的に聞いておきたい。シンプルで良いんだ。自然葬を考えている。そういえば、昔、あの旅行で森の中に迷い込んだことがあったな。自然の美しさと厳しさを同時に感じたよ。自然葬か…。お父さんらしいね。そして、その旅行話、また聞かせてよ。ああ、その話か。でも、遺産分割の話も重要だ。みんなで平和に解決したいからね。分かってる。でも、今日はお父さんの楽しい話も聞きたいんだ。終活の話はもちろん大切だけど、お父さんの人生の楽しい部分も、今のうちにたくさん共有したいから。なるほど、そういうことか。じゃあ、あの時の話から始めようか。インドでね、珍しいスパイスを買いに市場へ行ったんだけど…。ええ、それそれ！その話大好きなんだよね。話は長くなるが、いいかい？その後、終活のことも真剣に考えよう。家族の絆って、こういう共有からも深まるんだろうね。うん、終活も家族の思い出話も、全部がお父さんとの大切な時間。ありがとう、お父さん。いや、こちらこそありがとう。今日は良い一日だね。」
     """
 
-    print(message_dict)
+    # print(message_dict)
 
-    client = OpenAI()
+    # GPT要約の部分
+    # client = OpenAI()
+    # response = client.chat.completions.create(
+    #     # model="gpt-4",
+    #     # model="gpt-4-1106-preview",
+    #     model="gpt-3.5-turbo",
+    #     response_format={"type": "json_object"},
+    #     # messages=message_dict,
+    #     messages=[
+    #         {"role": "system", "content": system_content},
+    #         {"role": "user", "content": user_content},
+    #     ],
+    #     temperature=0.2,
+    #     max_tokens=500,
+    # )
+    # print(response)
+    # gpt_summaries = response.choices[0].message.content
+    # GPT要約の部分ここまで
 
-    response = client.chat.completions.create(
-        # model="gpt-4",
-        # model="gpt-4-1106-preview",
-        model="gpt-3.5-turbo",
-        response_format={"type": "json_object"},
-        # messages=message_dict,
-        messages=[
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": user_content},
-        ],
-        temperature=0.2,
-        max_tokens=500,
-    )
-    print(response)
-    result = response.choices[0].message.content
+    # GPTのダミー回答
+    gpt_summaries = {
+        "life_plan": {"1": "海外旅行の話を再度聞きたい", "2": "遺言や葬儀の希望、遺産の話をゆっくり話し合いたい"},
+        "assets_money": {"1": "古い家や土地の遺産分割について"},
+        "inheritance": {"1": "遺言に古い家や土地の処分方法を記載", "2": "遺産分割を家族で平和に解決したい"},
+        "funeral_grave": {"1": "自然葬を希望", "2": "葬儀のスタイルについて具体的に話し合い"},
+        "health_illness": {"1": "none"},
+        "caregiving": {"1": "none"},
+    }
+    gpt_summaries = json.dumps(gpt_summaries, indent=4, ensure_ascii=False)
+    # GPTのダミー回答ここまで
+
+    gpt_summaries = json.loads(gpt_summaries)
+
+    for category, details in gpt_summaries.items():
+
+        item_id = crud.get_item_id(mymodels.Items, category)
+        for key, content in details.items():
+            if content in ["none", "なし"]:  # 該当がない時
+                break
+            else:
+                values = {
+                    "parent_user_id": values_all.get("parent_user_id"),
+                    "child_user_id": values_all.get("child_user_id"),
+                    "item_id": item_id,
+                    "content": content,
+                }
+
+                result = crud.insert_chatsummaris(mymodels.ChatSummaries, values)
+                if result == "error":
+                    return "error"
 
     # 　Unicodeエスケープしない
     result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
