@@ -257,3 +257,12 @@ def get_roadmaps():
     result_json = result_df.to_json(orient="records", force_ascii=False)
 
     return result_json, 200
+
+
+# 終活項目のidと項目名の対応を読み込む
+@app.route("/items", methods=["GET"])
+def get_items():
+    result_df = crud.read_items(mymodels.Items)
+    result_json = result_df.to_json(orient="records", force_ascii=False)
+
+    return result_json, 200

@@ -276,3 +276,26 @@ def read_roadmaps(mymodel, parent_user_id):
         session.close()
 
     return df
+
+
+def read_items(mymodel):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    query = session.query(mymodel)  # すべて読み込む
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError:
+        print("items読み込みに失敗しました")
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df
