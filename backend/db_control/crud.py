@@ -252,3 +252,27 @@ def insert_chatsummaris(mymodel, values):
         session.close()
 
     return "inserted"
+
+
+def read_roadmaps(mymodel, parent_user_id):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = session.query(mymodel).filter(mymodel.parent_user_id == parent_user_id)
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError:
+        print("roadmaps読み込みに失敗しました")
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df

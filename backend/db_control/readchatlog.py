@@ -8,6 +8,7 @@ import pandas as pd
 from db_control import crud, mymodels
 
 import requests
+import pytz
 
 from datetime import datetime
 
@@ -54,7 +55,10 @@ def readchalogall(values):
     # ユーザー投稿とGPT投稿を一つにまとめて、投稿順に並べ替える
     chatposts_all_df = pd.concat([chatposts_user_df, chatposts_gpt_df]).sort_values(by="chatpost_created_at")
     # Datatimeを文字列に直す
-    chatposts_all_df["chatpost_created_at"] = chatposts_all_df["chatpost_created_at"].dt.strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    # UTCからJST（日本時間）への変換後、文字列に変換
+    chatposts_all_df['chatpost_created_at'] = chatposts_all_df['chatpost_created_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
+    chatposts_all_df["chatpost_created_at"] = chatposts_all_df["chatpost_created_at"].dt.strftime('%Y-%m-%d %H:%M')
 
     return chatposts_all_df
 
@@ -95,8 +99,10 @@ def readchalogsmall(values, count):
 
     # ユーザー投稿とGPT投稿を一つにまとめて、投稿順に並べ替える
     chatposts_all_df = pd.concat([chatposts_user_df, chatposts_gpt_df]).sort_values(by="chatpost_created_at")
-    # Datatimeを文字列に直す
-    chatposts_all_df["chatpost_created_at"] = chatposts_all_df["chatpost_created_at"].dt.strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    # UTCからJST（日本時間）への変換後、Datatimeを文字列に直す
+    chatposts_all_df['chatpost_created_at'] = chatposts_all_df['chatpost_created_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
+    chatposts_all_df["chatpost_created_at"] = chatposts_all_df["chatpost_created_at"].dt.strftime('%Y-%m-%d %H:%M')
 
     # 末尾のcount行数だけ取り出す
     chatpost_small_df = chatposts_all_df.tail(count)

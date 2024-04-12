@@ -8,6 +8,7 @@ from db_control import crud, mymodels, readchatlog
 
 import requests
 from datetime import datetime
+import pytz
 
 import openai
 from openai import OpenAI
@@ -239,3 +240,20 @@ def set_chatsummary():
     result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
 
     return result, 200
+
+
+# ロードマップの読み込み
+@app.route("/roadmaps", methods=["GET"])
+def get_roadmaps():
+    parent_user_id = request.args.get("parent_user_id")  # クエリパラメータ
+    result_df = crud.read_roadmaps(mymodels.Roadmaps, parent_user_id)
+
+    result_df = result_df[["item_id", "item_input_num", "item_state", "item_updated_at"]]
+    # UTCからJST（日本時間）への変換
+    result_df['item_updated_at'] = result_df['item_updated_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
+    # 日付を文字列に変換（例: '2024-04-13 09:00'）
+    result_df['item_updated_at'] = result_df['item_updated_at'].dt.strftime('%Y-%m-%d %H:%M')
+
+    result_json = result_df.to_json(orient="records", force_ascii=False)
+
+    return result_json, 200
