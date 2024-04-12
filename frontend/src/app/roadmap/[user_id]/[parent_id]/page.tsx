@@ -31,7 +31,7 @@ export default function Roadmap() {
     // item_idをitem_nameへ変換するmapを作成
     const map = createItemIdToNameMap(itemInfo);
     setItemIdToNameMap(map);
-    console.log(map);
+    // console.log(map);
   }, [itemInfo]);
 
   return (

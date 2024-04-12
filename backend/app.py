@@ -266,3 +266,47 @@ def get_items():
     result_json = result_df.to_json(orient="records", force_ascii=False)
 
     return result_json, 200
+
+
+# 終活項目の詳細ページに必要な項目
+@app.route("/roadmapdetails", methods=["GET"])
+def get_roadmapdetails():
+    parent_user_id = request.args.get("parent_user_id")  # クエリパラメータ
+    child_user_id = request.args.get("child_user_id")  # クエリパラメータ
+    item_name = request.args.get("item_name")  # クエリパラメータ
+
+    print(parent_user_id, child_user_id, item_name)
+    item_id = crud.get_item_id(mymodels.Items, item_name)
+    print(item_id)
+    print("+++++++++++++++++++++++++++++++++++++++")
+
+    # item_idに対応するロードマップ情報を取得
+    roadmap_item_df = crud.get_select_roadmap(mymodels.Roadmaps, parent_user_id, item_id)
+    roadmap_item_df = roadmap_item_df[["item_input_num", "item_state"]]
+    roadmap_item_json = roadmap_item_df.to_json(orient="records", force_ascii=False)
+    print(roadmap_item_json)
+    print("+++++++++++++++++++++++++++++++++++++++")
+
+    # チャット要約から対応するものを取得
+    select_chatsummaries_df = crud.get_select_chatsummaries(mymodels.ChatSummaries, parent_user_id, child_user_id, item_id)
+    select_chatsummaries_df = select_chatsummaries_df[["chat_summary_id", "content", "created_at"]]
+    # UTCからJST（日本時間）への変換した後に文字列に変換（例: '2024-04-13 09:00'）
+    select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
+    select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+    select_chatsummaries_json = select_chatsummaries_df.to_json(orient="records", force_ascii=False)
+    # 手動要約から対応するものを取得
+    select_manualsummaries_df = crud.get_select_manualsummaries(mymodels.ManualSummaries, parent_user_id, item_id)
+    select_manualsummaries_df = select_manualsummaries_df[["manual_summary_id", "content", "updated_at"]]
+    # UTCからJST（日本時間）への変換した後に文字列に変換（例: '2024-04-13 09:00'）
+    select_manualsummaries_df['updated_at'] = select_manualsummaries_df['updated_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
+    select_manualsummaries_df['updated_at'] = select_manualsummaries_df['updated_at'].dt.strftime('%Y-%m-%d %H:%M')
+    select_manualsummaries_json = select_manualsummaries_df.to_json(orient="records", force_ascii=False)
+
+    # 辞書としてまとめからjsonifyで変換する
+    result_dict = {
+        "roadmap": json.loads(roadmap_item_json),
+        "chatsummaries": json.loads(select_chatsummaries_json),
+        "manualsummaries": json.loads(select_manualsummaries_json),
+    }
+
+    return jsonify(result_dict), 200

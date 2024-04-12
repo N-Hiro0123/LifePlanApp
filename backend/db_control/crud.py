@@ -299,3 +299,79 @@ def read_items(mymodel):
         session.close()
 
     return df
+
+
+def get_select_roadmap(mymodel, parent_user_id, item_id):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = session.query(mymodel).filter(mymodel.parent_user_id == parent_user_id, mymodel.item_id == item_id)
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("itemsからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df
+
+
+def get_select_chatsummaries(mymodel, parent_user_id, child_user_id, item_id):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = session.query(mymodel).filter(
+        mymodel.parent_user_id == parent_user_id,
+        mymodel.child_user_id == child_user_id,
+        mymodel.item_id == item_id,
+    )
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("ChatSummariesからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df
+
+
+def get_select_manualsummaries(mymodel, parent_user_id, item_id):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = session.query(mymodel).filter(mymodel.parent_user_id == parent_user_id, mymodel.item_id == item_id)
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("ManualSummariesからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df
