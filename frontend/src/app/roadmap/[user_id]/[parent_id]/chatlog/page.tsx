@@ -3,6 +3,7 @@
 import getChatlog from "./getChatlog";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Chatlog() {
   const router = useRouter();
@@ -24,11 +25,16 @@ export default function Chatlog() {
 
   return (
     <div>
+      <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
+        <p>
+          <strong>Roadmap**link**</strong>
+        </p>
+      </Link>
       <h1>Chat Log</h1>
       <ul>
         {chatlogInfo.map((log, index) => (
           <li key={index}>
-            <p>Posted by: {log.post_user}</p>
+            <p>Posted by: {log.role}</p>
             <p>Created At: {log.chatpost_created_at}</p>
             <p>
               Content: <strong>{log.content}</strong>
