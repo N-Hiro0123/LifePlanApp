@@ -13,6 +13,7 @@ export default function RoadmapDatails() {
   const [roadmapInfo, setRoadmapInfo] = useState([]);
   const [chatSummariesInfo, setChatSummariesInfo] = useState([]);
   const [manualSummariesInfo, setManualSummariesInfo] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAndSetDatas = async () => {
@@ -21,19 +22,19 @@ export default function RoadmapDatails() {
         params.user_id,
         params.item_name
       );
-      setdetailDatas(Data);
+      setRoadmapInfo(Data["roadmap"]);
+      setChatSummariesInfo(Data["chatsummaries"]);
+      setManualSummariesInfo(Data["manualsummaries"]);
+      setIsLoading(false);
     };
     fetchAndSetDatas();
   }, []);
 
   useEffect(() => {
-    const roadmapdata = detailDatas[roadmap];
-    setRoadmapInfo(roadmapdata);
-    const chatdata = detailDatas[chatsummaries];
-    setChatSummariesInfo(chatdata);
-    const manualdata = detailDatas[manualsummaries];
-    setManualSummariesInfo(manualdata);
-  }, [detailDatas]);
+    if (!isLoading) {
+      console.log(roadmapInfo, chatSummariesInfo, manualSummariesInfo);
+    }
+  }, [isLoading, roadmapInfo, chatSummariesInfo, manualSummariesInfo]);
 
   return (
     <div>
@@ -42,31 +43,32 @@ export default function RoadmapDatails() {
           <strong>Roadmap**link**</strong>
         </p>
       </Link>
-
+      <br></br>
       <h1>{params.item_name}</h1>
-      <p>{roadmapInfo[item_input_num]}</p>
-      {/* <p>input_num: {roadmapInfo.item_input_num}</p>
-      <p>State:{roadmapInfo.item_state}</p> */}
+      <h1>Roadmap</h1>
+      <p>input_num: {roadmapInfo[0]["item_input_num"]}</p>
+      <p>state: {roadmapInfo[0]["item_state"]}</p>
 
-      {/* <ul>
-        {roadmapInfo.map((log, index) => (
+      <br></br>
+      <h1>Manual Summaries</h1>
+      <p>
+        manual_summary_id（編集する時に使う）:
+        {manualSummariesInfo[0]["manual_summary_id"]}
+      </p>
+      <p>input_num: {manualSummariesInfo[0]["content"]}</p>
+      <p>update_at: {manualSummariesInfo[0]["updated_at"]}</p>
+
+      <br></br>
+      <ul>
+        {chatSummariesInfo.map((log, index) => (
           <li key={index}>
-            <Link
-              href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[log.item_id]}`}
-            >
-              <p>
-                <strong>
-                  Item_id --link--: {itemIdToNameMap[log.item_id]}
-                </strong>
-              </p>
-            </Link>
-            <p>input_num: {log.item_input_num}</p>
-            <p>State:{log.item_state}</p>
-            <p>Update_At: {log.item_updated_at}</p>
+            <p>chat_summary_id（編集する時に使う）: {log["chat_summary_id"]}</p>
+            <p>content:{log["content"]}</p>
+            <p>created_at:{log["created_at"]}</p>
             <br></br>
           </li>
         ))}
-      </ul> */}
+      </ul>
     </div>
   );
 
