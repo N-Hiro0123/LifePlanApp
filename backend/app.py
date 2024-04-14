@@ -294,3 +294,69 @@ def get_roadmapdetails():
     }
 
     return jsonify(result_dict), 200
+
+
+# ChatPostsから会話の開始と終了を読み込んで、ChatRawDatasの内容を整理してjson形式で返す
+# countで指定された数だけ返す
+@app.route("/chatpostgpt", methods=["POST"])
+def get_chatpsotgpt():
+
+    values_all = request.get_json()
+    # values = {
+    #     "parent_user_id": XX,
+    #     "child_user_id": YY,
+    #     "count": Z,
+    # }
+    print(values_all)
+
+    values = {
+        "parent_user_id": values_all.get("parent_user_id"),
+        "child_user_id": values_all.get("child_user_id"),
+    }
+    count = values_all.get("count")
+
+    # ユーザーとGPTのチャット履歴を時間順に並べて、最新ものをcount数だけ取得する
+    chatpost_small_df = readchatlog.readchalogsmall(values, count)
+    # "role"と"content"だけ抜き出す
+    message_df = chatpost_small_df[["role", "content"]]
+
+    # 質問作成用のsystemメッセージを追加する
+    system_message_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message_question()}])
+
+    # 繋げたうえで、辞書形式にしてから、openAIのAPIへ渡す
+    # 回答を安定させるために、systemメッセージで挟み込む
+    message_df = pd.concat([system_message_df, message_df])
+    message_dict = message_df.to_dict(orient="records")
+
+    print(message_dict)
+    print("++++++++++++++++++++++++++++++++++++++++;")
+
+    # GPT要約の部分
+    client = OpenAI()
+    response = client.chat.completions.create(
+        # model="gpt-4",
+        # model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
+        # response_format={"type": "json_object"},
+        # チャット履歴から渡す時はこちら
+        messages=message_dict,
+        # # 親子会話をダミーデータから渡す時はこちら
+        # messages=[
+        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
+        #     {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
+        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
+        # ],
+        temperature=0.2,
+        max_tokens=500,
+    )
+
+    question = response.choices[0].message.content
+    # GPT要約の部分ここまで
+
+    print(question)
+    print("+++++++++++++++++++++++++++++++++++")
+
+    # 　Unicodeエスケープしない
+    result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
+
+    return question, 200

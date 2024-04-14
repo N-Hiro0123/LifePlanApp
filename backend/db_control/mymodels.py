@@ -88,7 +88,7 @@ class ChatPostsGPT(Base):
     parent_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'))
     child_user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.user_id'))
     content: Mapped[str] = mapped_column(String)
-    chatpost_created_at: Mapped[date] = mapped_column(DateTime)
+    chatpost_created_at: Mapped[date] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class ChatSummaries(Base):
