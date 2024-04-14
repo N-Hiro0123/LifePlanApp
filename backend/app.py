@@ -272,6 +272,11 @@ def get_roadmapdetails():
     # UTCからJST（日本時間）への変換した後に文字列に変換（例: '2024-04-13 09:00'）
     select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
     select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+
+    # 　有効な要約が入っている場合は１行目のダミーデータを取り除く
+    if len(select_chatsummaries_df) >= 2:
+        select_chatsummaries_df = select_chatsummaries_df.iloc[1:]
+
     select_chatsummaries_json = select_chatsummaries_df.to_json(orient="records", force_ascii=False)
     # 手動要約から対応するものを取得
     select_manualsummaries_df = crud.get_select_manualsummaries(mymodels.ManualSummaries, parent_user_id, item_id)

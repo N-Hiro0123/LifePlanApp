@@ -182,7 +182,7 @@ values = {
     "parent_user_id": 2,
     "item_id": 1,
     "item_input_num": 0,
-    "item_state": "未入力",
+    "item_state": "unfilled",
     # "item_updated_at": ,
 }
 
@@ -195,7 +195,7 @@ values = {
     "parent_user_id": 4,
     "item_id": 1,
     "item_input_num": 0,
-    "item_state": "未入力",
+    "item_state": "unfilled",
     # "item_updated_at": ,
 }
 
@@ -318,7 +318,7 @@ values = {
 
 for i in range(1, 7):
     values["item_id"] = i
-    values["content"] = f"項目{i}の要約結果の文章"
+    values["content"] = "要約なし（ここに要約結果が保存されます）"
     InsertValue(mymodel, values)  # DBへ値を挿入
 
 ##################################################################################

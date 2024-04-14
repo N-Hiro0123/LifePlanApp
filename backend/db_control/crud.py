@@ -388,18 +388,19 @@ def update_roadmap(mymodel, values):
     parent_user_id = values.get("parent_user_id")
     item_id = values.get("item_id")
     item_input_num = values.get("item_input_num")
+    item_state = values.get("item_state")
     item_updated_at = values.get("item_updated_at")
 
     # session構築
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # itme_nameに対応するitem_idを受け取る
+    # 更新する
     query = (
         session.query(mymodel)
         .filter(mymodel.parent_user_id == parent_user_id, mymodel.item_id == item_id)
         .update(
-            {mymodel.item_input_num: item_input_num, mymodel.item_updated_at: item_updated_at},
+            {mymodel.item_input_num: item_input_num, mymodel.item_state: item_state, mymodel.item_updated_at: item_updated_at},
         )
     )
 
