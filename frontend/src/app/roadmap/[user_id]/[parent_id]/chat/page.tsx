@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import getServerTime from "./getServerTime";
 import createChatPost from "./createChatPost";
+import createChatPostGPT from "./createChatPostGPT";
 import createChatRawData from "./createChatRawData";
 import getChatlogSmall from "./getChatlogSmall";
 import Link from "next/link";
@@ -146,6 +147,24 @@ export default function Chat() {
       return;
     }
   }, [postComplete]);
+
+  // 投稿が完了された時に、postCountを増やして、GPTから応答をもらう
+  useEffect(() => {
+    if (start_time < end_time) {
+      const fetchPostGPT = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          count: postCount, //取得する最大履歴
+        };
+        const res = await createChatPostGPT(values);
+      };
+      fetchPostGPT();
+      setPostCount((prevCount) => prevCount + 1);
+    } else {
+      return;
+    }
+  }, [end_time]);
 
   // 投稿が完了された時に、postCountを増やして、会話履歴を取得する
   useEffect(() => {
