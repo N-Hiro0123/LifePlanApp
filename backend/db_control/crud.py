@@ -442,3 +442,33 @@ def get_chatsummaries_info(mymodel, parent_user_id, item_id):
         session.close()
 
     return df
+
+
+def insert_chatpostgpt(mymodel, values):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # values = {
+    #     "parent_user_id": values_all.get("parent_user_id"),
+    #     "child_user_id": values_all.get("child_user_id"),
+    #     "content": content,
+    # }
+
+    query = insert(mymodel).values(values)
+
+    try:
+        # トランザクションを開始
+        with session.begin():
+            # データの挿入
+            result = session.execute(query)
+    except sqlalchemy.exc.IntegrityError:
+        print("ChatPostsGPTへの挿入に失敗しました")
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return "inserted"

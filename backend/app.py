@@ -331,32 +331,33 @@ def get_chatpsotgpt():
     print(message_dict)
     print("++++++++++++++++++++++++++++++++++++++++;")
 
-    # GPT要約の部分
+    # GPTへ指示を出す部分
     client = OpenAI()
     response = client.chat.completions.create(
         # model="gpt-4",
         # model="gpt-4-1106-preview",
         model="gpt-3.5-turbo",
-        # response_format={"type": "json_object"},
-        # チャット履歴から渡す時はこちら
         messages=message_dict,
-        # # 親子会話をダミーデータから渡す時はこちら
-        # messages=[
-        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
-        #     {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
-        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
-        # ],
         temperature=0.2,
         max_tokens=500,
     )
 
     question = response.choices[0].message.content
-    # GPT要約の部分ここまで
+    # GPTへ指示を出す部分ここまで
 
     print(question)
     print("+++++++++++++++++++++++++++++++++++")
 
-    # 　Unicodeエスケープしない
-    result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
+    # 返答内容をchatpostgptへ格納する
+    values = {
+        "parent_user_id": values_all.get("parent_user_id"),
+        "child_user_id": values_all.get("child_user_id"),
+        "content": question,
+    }
 
-    return question, 200
+    result = crud.insert_chatpostgpt(mymodels.ChatPostsGPT, values)
+
+    # # 　Unicodeエスケープしない
+    # result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
+
+    return result, 200
