@@ -375,3 +375,69 @@ def get_select_manualsummaries(mymodel, parent_user_id, item_id):
         session.close()
 
     return df
+
+
+def update_roadmap(mymodel, values):
+    # values = {
+    #     "parent_user_id": values.get("parent_user_id"),
+    #     "item_id": item_id,
+    #     "item_input_num": item_input_num,
+    #     "item_updated_at": item_updated_at,
+    # }
+
+    parent_user_id = values.get("parent_user_id")
+    item_id = values.get("item_id")
+    item_input_num = values.get("item_input_num")
+    item_updated_at = values.get("item_updated_at")
+
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = (
+        session.query(mymodel)
+        .filter(mymodel.parent_user_id == parent_user_id, mymodel.item_id == item_id)
+        .update(
+            {mymodel.item_input_num: item_input_num, mymodel.item_updated_at: item_updated_at},
+        )
+    )
+
+    try:
+        # トランザクションをコミット
+        session.commit()
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("ManualSummariesからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return "put"
+
+
+def get_chatsummaries_info(mymodel, parent_user_id, item_id):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # itme_nameに対応するitem_idを受け取る
+    query = session.query(mymodel).filter(mymodel.parent_user_id == parent_user_id, mymodel.item_id == item_id)
+
+    try:
+        # query結果をpdにする場合はread_sqlでよいみたい
+        df = pd.read_sql(query.statement, session.bind)
+
+    except sqlalchemy.exc.IntegrityError as e:
+        print("ChatSummariesからの読み込みに失敗しました", e)
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return df

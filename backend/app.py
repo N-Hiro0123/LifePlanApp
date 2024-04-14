@@ -4,7 +4,7 @@ import json
 from flask_cors import CORS
 import pandas as pd
 
-from db_control import crud, mymodels, readchatlog
+from db_control import crud, mymodels, readchatlog, updateroadmap
 
 import requests
 from datetime import datetime
@@ -151,8 +151,8 @@ def set_chatsummary():
     # GPT用要約時の"system"のプロンプトをダミーファイルから読み込み、syteメッセージを作成する
     system_content = dummy_message_and_prompt.make_dummy_message()
     # systemメッセージを追加する
-    system_message_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_dummy_message()}])
-    system_message2_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_dummy_message2()}])
+    system_message_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message()}])
+    system_message2_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message2()}])
 
     # 繋げたうえで、辞書形式にしてから、openAIのAPIへ渡す
     # 回答を安定させるために、systemメッセージで挟み込む
@@ -219,6 +219,9 @@ def set_chatsummary():
     # 　Unicodeエスケープしない
     result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
 
+    # 要約後にはRoadmapsの更新を行う
+    updateroadmap.update_roadmaps(values_all.get("parent_user_id"))
+
     return result, 200
 
 
@@ -257,15 +260,11 @@ def get_roadmapdetails():
 
     print(parent_user_id, child_user_id, item_name)
     item_id = crud.get_item_id(mymodels.Items, item_name)
-    print(item_id)
-    print("+++++++++++++++++++++++++++++++++++++++")
 
     # item_idに対応するロードマップ情報を取得
     roadmap_item_df = crud.get_select_roadmap(mymodels.Roadmaps, parent_user_id, item_id)
     roadmap_item_df = roadmap_item_df[["item_input_num", "item_state"]]
     roadmap_item_json = roadmap_item_df.to_json(orient="records", force_ascii=False)
-    print(roadmap_item_json)
-    print("+++++++++++++++++++++++++++++++++++++++")
 
     # チャット要約から対応するものを取得
     select_chatsummaries_df = crud.get_select_chatsummaries(mymodels.ChatSummaries, parent_user_id, child_user_id, item_id)
