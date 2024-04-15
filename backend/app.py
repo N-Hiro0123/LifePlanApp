@@ -4,7 +4,7 @@ import json
 from flask_cors import CORS
 import pandas as pd
 
-from db_control import crud, mymodels, readchatlog
+from db_control import crud, mymodels, readchatlog, updateroadmap
 
 import requests
 from datetime import datetime
@@ -14,6 +14,9 @@ import openai
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+
+import textwrap  # テキストの分割
+import dummy_message_and_prompt  # 　プロンプト検討用
 
 # Azure Database for MySQL
 # REST APIでありCRUDを持っている
@@ -145,79 +148,56 @@ def set_chatsummary():
     chatpost_small_df = readchatlog.readchalogsmall(values, count)
     # "role"と"content"だけ抜き出す
     message_df = chatpost_small_df[["role", "content"]]
+
+    # GPT用要約時の"system"のプロンプトをダミーファイルから読み込み、syteメッセージを作成する
+    system_content = dummy_message_and_prompt.make_dummy_message()
     # systemメッセージを追加する
-    system_message_df = pd.DataFrame(
-        [
-            {
-                "role": "system",
-                "content": "あなたは終活アドバイザー、終活の専門家です",
-            }
-        ]
-    )
+    system_message_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message()}])
+    system_message2_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message2()}])
+
     # 繋げたうえで、辞書形式にしてから、openAIのAPIへ渡す
-    message_df = pd.concat([system_message_df, message_df])
+    # 回答を安定させるために、systemメッセージで挟み込む
+    message_df = pd.concat([system_message_df, message_df, system_message2_df])
     message_dict = message_df.to_dict(orient="records")
 
-    system_content = """
-       
-    あなたは終活アドバイザー、終活の専門家です。
-    以下の会話から終活に関する特定の情報を抽出し、終活ロードマップに沿った順序でカテゴリー分けし、要約してください。
-    各カテゴリーに該当する内容がない場合は「None」と回答してください。要約はそれぞれ200文字以内で行ってください。
-    カテゴリーと順序:
-    ライフプラン/自分史（学び、仕事、家族、住まい、趣味、旅行）
-    資産・お金（口座情報、銀行名、証券会社名、保険会社名、不動産、支店名、金額、資産区分）
-    相続（相続したい人の名前、相続したいものの詳細）
-    葬式/お墓（葬儀の種類、葬儀社名、お寺・教会、場所、形態、墓の有無、承継者、法要、無墓希望、費用）
-    健康/病気（診療科、病院名、病名、認知症や判断力低下時の希望、病名や余命の告知、緩和ケア、ホスピス入所）
-    介護（介護施設名、介護サービス、介護者）
-    出力方法：
-    各カテゴリーについてはjson形式で出力してください。
-    各カテゴリーのキーは以下のものを使ってください。
-    "life_plan", "assets_money", "inheritance", "funeral_grave", "health_illness", "caregiving"
-    各カテゴリーに該当する内容が複数ある場合は、数字をキーとして複数に分けて出力してください。
-    該当する項目がない場合は、{"1": None}と格納してください
-    また、一度出力した内容を見直したうえで、該当する項目がない箇所は"none"に修正してください。
-    """
-
-    user_content = """
-    お父さん、今日はちょっと話があって…。でも、その前にお父さんの好きなコーヒー淹れたよ。おお、それはありがたい。何の話だね？」実は終活の話と、もう一つ…。お父さんが若い頃によく話してくれた、海外旅行の話をもう一度聞きたくて。海外旅行か…。あの頃は冒険だったなあ。でも、なぜ急に？いや、だってお父さんの話、本当に面白いんだもの。でも、その前に終活のこと。遺言や葬儀の希望、遺産の話も含めて、ゆっくり話し合いたいんだ。そうか、終活の話か。それは大事なことだ。遺言については、特に古い家や土地のことをどうしてほしいか書き記しておきたいな。それから、葬儀のスタイルも。お父さんがどんな風に見送られたいのか、具体的に聞いておきたい。シンプルで良いんだ。自然葬を考えている。そういえば、昔、あの旅行で森の中に迷い込んだことがあったな。自然の美しさと厳しさを同時に感じたよ。自然葬か…。お父さんらしいね。そして、その旅行話、また聞かせてよ。ああ、その話か。でも、遺産分割の話も重要だ。みんなで平和に解決したいからね。分かってる。でも、今日はお父さんの楽しい話も聞きたいんだ。終活の話はもちろん大切だけど、お父さんの人生の楽しい部分も、今のうちにたくさん共有したいから。なるほど、そういうことか。じゃあ、あの時の話から始めようか。インドでね、珍しいスパイスを買いに市場へ行ったんだけど…。ええ、それそれ！その話大好きなんだよね。話は長くなるが、いいかい？その後、終活のことも真剣に考えよう。家族の絆って、こういう共有からも深まるんだろうね。うん、終活も家族の思い出話も、全部がお父さんとの大切な時間。ありがとう、お父さん。いや、こちらこそありがとう。今日は良い一日だね。」
-    """
-
-    # print(message_dict)
-
     # GPT要約の部分
-    # client = OpenAI()
-    # response = client.chat.completions.create(
-    #     # model="gpt-4",
-    #     # model="gpt-4-1106-preview",
-    #     model="gpt-3.5-turbo",
-    #     response_format={"type": "json_object"},
-    #     # messages=message_dict,
-    #     messages=[
-    #         {"role": "system", "content": system_content},
-    #         {"role": "user", "content": user_content},
-    #     ],
-    #     temperature=0.2,
-    #     max_tokens=500,
-    # )
-    # print(response)
-    # gpt_summaries = response.choices[0].message.content
+    client = OpenAI()
+    response = client.chat.completions.create(
+        # model="gpt-4",
+        # model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
+        response_format={"type": "json_object"},
+        # チャット履歴から渡す時はこちら
+        # messages=message_dict,
+        # 親子会話をダミーデータから渡す時はこちら
+        messages=[
+            {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
+            {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
+            {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
+        ],
+        temperature=0.2,
+        max_tokens=500,
+    )
+
+    gpt_summaries = response.choices[0].message.content
     # GPT要約の部分ここまで
 
-    # GPTのダミー回答
-    gpt_summaries = {
-        "life_plan": {"1": "海外旅行の話を再度聞きたい", "2": "遺言や葬儀の希望、遺産の話をゆっくり話し合いたい"},
-        "assets_money": {"1": "古い家や土地の遺産分割について"},
-        "inheritance": {"1": "遺言に古い家や土地の処分方法を記載", "2": "遺産分割を家族で平和に解決したい"},
-        "funeral_grave": {"1": "自然葬を希望", "2": "葬儀のスタイルについて具体的に話し合い"},
-        "health_illness": {"1": "none"},
-        "caregiving": {"1": "none"},
-    }
-    gpt_summaries = json.dumps(gpt_summaries, indent=4, ensure_ascii=False)
+    # GPTのダミー回答（動作確認する際はこちらを使う）
+    # gpt_summaries = {
+    #     "life_plan": {"1": "海外旅行の話を再度聞きたい", "2": "遺言や葬儀の希望、遺産の話をゆっくり話し合いたい"},
+    #     "assets_money": {"1": "古い家や土地の遺産分割について"},
+    #     "inheritance": {"1": "遺言に古い家や土地の処分方法を記載", "2": "遺産分割を家族で平和に解決したい"},
+    #     "funeral_grave": {"1": "自然葬を希望", "2": "葬儀のスタイルについて具体的に話し合い"},
+    #     "health_illness": {"1": "none"},
+    #     "caregiving": {"1": "none"},
+    # }
+    # gpt_summaries = json.dumps(gpt_summaries, indent=4, ensure_ascii=False)
     # GPTのダミー回答ここまで
 
     gpt_summaries = json.loads(gpt_summaries)
+    print(gpt_summaries)
 
+    # 要約結果をChatSummariesへ格納
     for category, details in gpt_summaries.items():
 
         item_id = crud.get_item_id(mymodels.Items, category)
@@ -239,7 +219,10 @@ def set_chatsummary():
     # 　Unicodeエスケープしない
     result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
 
-    return result, 200
+    # 要約格納後にRoadmapsの更新を行う
+    updateroadmap.update_roadmaps(values_all.get("parent_user_id"))
+
+    return gpt_summaries, 200
 
 
 # ロードマップの読み込み
@@ -277,15 +260,11 @@ def get_roadmapdetails():
 
     print(parent_user_id, child_user_id, item_name)
     item_id = crud.get_item_id(mymodels.Items, item_name)
-    print(item_id)
-    print("+++++++++++++++++++++++++++++++++++++++")
 
     # item_idに対応するロードマップ情報を取得
     roadmap_item_df = crud.get_select_roadmap(mymodels.Roadmaps, parent_user_id, item_id)
     roadmap_item_df = roadmap_item_df[["item_input_num", "item_state"]]
     roadmap_item_json = roadmap_item_df.to_json(orient="records", force_ascii=False)
-    print(roadmap_item_json)
-    print("+++++++++++++++++++++++++++++++++++++++")
 
     # チャット要約から対応するものを取得
     select_chatsummaries_df = crud.get_select_chatsummaries(mymodels.ChatSummaries, parent_user_id, child_user_id, item_id)
@@ -293,6 +272,11 @@ def get_roadmapdetails():
     # UTCからJST（日本時間）への変換した後に文字列に変換（例: '2024-04-13 09:00'）
     select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.tz_localize('UTC').dt.tz_convert('Asia/Tokyo')
     select_chatsummaries_df['created_at'] = select_chatsummaries_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+
+    # 　有効な要約が入っている場合は１行目のダミーデータを取り除く
+    if len(select_chatsummaries_df) >= 2:
+        select_chatsummaries_df = select_chatsummaries_df.iloc[1:]
+
     select_chatsummaries_json = select_chatsummaries_df.to_json(orient="records", force_ascii=False)
     # 手動要約から対応するものを取得
     select_manualsummaries_df = crud.get_select_manualsummaries(mymodels.ManualSummaries, parent_user_id, item_id)
@@ -310,3 +294,103 @@ def get_roadmapdetails():
     }
 
     return jsonify(result_dict), 200
+
+
+# ChatPostsから会話の開始と終了を読み込んで、ChatRawDatasの内容を整理してjson形式で返す
+# countで指定された数だけ返す
+@app.route("/chatpostgpt", methods=["POST"])
+def get_chatpsotgpt():
+
+    values_all = request.get_json()
+    # values = {
+    #     "parent_user_id": XX,
+    #     "child_user_id": YY,
+    #     "count": Z,
+    # }
+    print(values_all)
+
+    values = {
+        "parent_user_id": values_all.get("parent_user_id"),
+        "child_user_id": values_all.get("child_user_id"),
+    }
+    count = values_all.get("count")
+
+    # ユーザーとGPTのチャット履歴を時間順に並べて、最新ものをcount数だけ取得する
+    chatpost_small_df = readchatlog.readchalogsmall(values, count)
+    # "role"と"content"だけ抜き出す
+    message_df = chatpost_small_df[["role", "content"]]
+
+    # 質問作成用のsystemメッセージを追加する
+    system_message_df = pd.DataFrame([{"role": "system", "content": dummy_message_and_prompt.make_system_message_question()}])
+
+    # 繋げたうえで、辞書形式にしてから、openAIのAPIへ渡す
+    # 回答を安定させるために、systemメッセージで挟み込む
+    message_df = pd.concat([system_message_df, message_df])
+    message_dict = message_df.to_dict(orient="records")
+
+    # GPTへ指示を出す部分
+    client = OpenAI()
+    response = client.chat.completions.create(
+        # model="gpt-4",
+        # model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
+        messages=message_dict,
+        temperature=0.2,
+        max_tokens=500,
+    )
+
+    question = response.choices[0].message.content
+    # GPTへ指示を出す部分ここまで
+
+    # 返答内容をchatpostgptへ格納する
+    values = {
+        "parent_user_id": values_all.get("parent_user_id"),
+        "child_user_id": values_all.get("child_user_id"),
+        "content": question,
+    }
+
+    result = crud.insert_chatpostgpt(mymodels.ChatPostsGPT, values)
+
+    # # 　Unicodeエスケープしない
+    # result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
+
+    return result, 200
+
+
+# チャットの生データを挿入する
+@app.route("/chatposttext", methods=["POST"])
+def create_chattext():
+    values = request.get_json()
+    # values = {
+    #     "parent_user_id": XX,
+    #     "child_user_id": YY,
+    #     "content": "テキスト（長文）",
+    # }
+    print(values)
+
+    parent_user_id = values.get("parent_user_id")
+    child_user_id = values.get("child_user_id")
+    content = values.get("content")
+
+    # ChatPostへ投稿用の開始時間の取得
+    recording_start = datetime.utcnow()
+
+    content_list = textwrap.wrap(content, 50)  # 文章を50文字毎に分割
+    for part_of_contennt in content_list:
+        values = {"parent_user_id": parent_user_id, "child_user_id": child_user_id, "content": part_of_contennt}
+
+        result = crud.chatrawinsert(mymodels.ChatRawDatas, values)
+
+    # ChatPostへ投稿用の終了時間の取得
+    recording_end = datetime.utcnow()
+
+    values = {
+        "parent_user_id": parent_user_id,
+        "child_user_id": child_user_id,
+        "recording_start_datetime": recording_start,
+        "recording_end_datetime": recording_end,
+    }
+
+    result = crud.chatpostinsert_rawdatetime(mymodels.ChatPosts, values)
+
+    return result, 200

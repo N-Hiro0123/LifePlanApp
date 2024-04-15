@@ -5,7 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 
 import getServerTime from "./getServerTime";
 import createChatPost from "./createChatPost";
+import createChatText from "./createChatText"; //テキストの投稿はこれだけを使う
+import createChatPostGPT from "./createChatPostGPT";
 import createChatRawData from "./createChatRawData";
+import createGPTSummary from "./createGPTSummary";
 import getChatlogSmall from "./getChatlogSmall";
 import Link from "next/link";
 
@@ -13,16 +16,16 @@ export default function Chat() {
   const router = useRouter();
   const params = useParams();
   // console.log(params.user_id, params.parent_id);
-  const [start_time, setStart_time] = useState<string>("");
-  const [end_time, setEnd_time] = useState<string>("");
   const [chatlogInfo, setChatlogInfo] = useState([]);
   const [postComplete, setPostComplete] = useState(false); //投稿が完了したことを検出
+  const [postGPTComplete, setPostGPTComplete] = useState(false); //GPTの投稿が完了したことを検出
   const [postCount, setPostCount] = useState<number>(0); //投稿階数　履歴を取得する
+  const [summaryInfo, setSummaryInfo] = useState([]); //要約結果を保存
 
   const [isRecording, setIsRecording] = useState(false);
   const [text, setText] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
-  const [savetext, setSaveText] = useState<string>("");
+  const [savetext, setSaveText] = useState<string>(""); //投稿するテキスト
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(
     null
   );
@@ -42,28 +45,14 @@ export default function Chat() {
     if (!recognition) return;
     if (isRecording) {
       // false->tureの時の処理
-      // 記録開始時間の取得
-      const fetchAndSetStartTime = async () => {
-        const server_time = await getServerTime();
-        setStart_time(server_time);
-      };
-      fetchAndSetStartTime();
       // 録音開始
       recognition.start();
     } else {
       // true->falseの時の処理
       // 録音を停止
       recognition.stop();
-      // 記録停止時間の取得
-
-      // 発話が止まっている時に停止ボタンを押すとここで終了時間を記録
-      if (savetext !== "") {
-        const fetchAndSetEndTime = async () => {
-          const server_time = await getServerTime();
-          setEnd_time(server_time);
-        };
-        fetchAndSetEndTime();
-      }
+      // text内容を保存する場所に渡す
+      setSaveText(text);
       // textを初期化
       setText("");
     }
@@ -76,7 +65,6 @@ export default function Chat() {
       for (let i = event.resultIndex; i < results.length; i++) {
         if (results[i].isFinal) {
           setText((prevText) => prevText + results[i][0].transcript);
-          setSaveText(results[i][0].transcript);
           setTranscript("");
         } else {
           setTranscript(results[i][0].transcript);
@@ -85,74 +73,48 @@ export default function Chat() {
     };
   }, [recognition]);
 
-  // 認識結果が確定した時(savetext)にその内容をバックエンドへ送る
-  useEffect(() => {
-    if (savetext == "") return;
-    else {
-      //結果をバックエンドへ送りたい
-      const fetchChatRawDatas = async () => {
-        const values = {
-          parent_user_id: params.parent_id,
-          child_user_id: params.user_id,
-          content: savetext,
-        };
-        createChatRawData(values);
+  // 送信ボタンを押したときに投稿＆GPTから返答もらう
+  const handleSubmit_post = async (event) => {
+    event.preventDefault();
+
+    const fetchChatText = async () => {
+      const values = {
+        parent_user_id: params.parent_id,
+        child_user_id: params.user_id,
+        content: savetext,
       };
-      fetchChatRawDatas();
-      console.log(text + "何が表示されているでしょうか");
+      const res = await createChatText(values);
+      setPostComplete(res);
+    };
 
-      //発話中に終了ボタンを押したときはこちらの処理
-      // 録音が終了した時にtext=""となっているので終了時間を取得する
-      if (!isRecording) {
-        const fetchAndSetEndTime = async () => {
-          const server_time = await getServerTime();
-          setEnd_time(server_time);
-        };
-        fetchAndSetEndTime();
-        setText("");
-      }
-    }
-  }, [savetext]);
+    fetchChatText(); //テキストの投稿
+    setSaveText(""); //初期化
+    setPostCount((prevCount) => prevCount + 1); // 投稿階数を＋１
+  };
 
-  useEffect(() => {
-    if (start_time < end_time) {
-      // 録音内容をChatPostsへ保存
-      const fetchChatPost = async () => {
-        const values = {
-          parent_user_id: params.parent_id,
-          child_user_id: params.user_id,
-          recording_start_datetime: start_time,
-          recording_end_datetime: end_time,
-        };
-        // console.log(values);
-        console.log(postCount + "投稿直前");
-        const flag = await createChatPost(values);
-        // setPostCount(postCount + 1); //投稿数をカウントアップ
-        setPostComplete(flag); // 投稿完了を確認
-        // console.log(postCount + "投稿直後");
-      };
-      fetchChatPost();
-      setSaveText(""); //投稿する内容を初期化する
-    }
-  }, [end_time]);
-
-  // 投稿が完了された時に、postCountを増やして、会話履歴を取得する
+  // 投稿が完了された時に、GPT応答を生成しつつpostCountを増やす
   useEffect(() => {
     if (postComplete) {
-      setPostCount((prevCount) => prevCount + 1);
-      console.log(postCount + "投稿時点");
-      setPostComplete(false); // 投稿フラグを未完了に戻す
+      const fetchPostGPT = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          count: postCount, //取得する最大履歴
+        };
+        const res = await createChatPostGPT(values);
+        setPostGPTComplete(res);
+      };
+      fetchPostGPT();
+      setPostCount((prevCount) => prevCount + 1); //GPT分のカウントを増やす
     } else {
       return;
     }
   }, [postComplete]);
 
-  // 投稿が完了された時に、postCountを増やして、会話履歴を取得する
+  // 投稿もしくはGPT投稿が完了された時に会話履歴を取得する
   useEffect(() => {
-    if (postCount > 0) {
+    if (postComplete || postGPTComplete) {
       const fetchGetChatlogSmall = async () => {
-        // setPostCount((prevCount) => prevCount + 1);
-        console.log(postCount + "投稿時点");
         const values = {
           parent_user_id: params.parent_id,
           child_user_id: params.user_id,
@@ -162,13 +124,33 @@ export default function Chat() {
         await setChatlogInfo(data);
       };
       fetchGetChatlogSmall();
+      setPostComplete(false);
+      setPostGPTComplete(false);
     } else {
       return;
     }
-  }, [postCount]);
+  }, [postComplete, postGPTComplete]);
+
+  // 要約ボタンを押したときに要約するとともに画面遷移する
+  const handleSubmit_summary = async (event) => {
+    event.preventDefault();
+
+    const fetchGPTSuumary = async () => {
+      const values = {
+        parent_user_id: params.parent_id,
+        child_user_id: params.user_id,
+        count: postCount,
+      };
+      const data = await createGPTSummary(values);
+      setSummaryInfo(data); // 一応、要約結果を格納しておく　確認画面を作成する場合はこれを使う
+    };
+    await fetchGPTSuumary(); //要約の実施
+    router.push(`./`); //ロードマップの画面に戻る
+  };
 
   return (
     <main>
+      {/* 以下、会話履歴表示部 */}
       <div>
         <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
           <p>
@@ -189,6 +171,7 @@ export default function Chat() {
           ))}
         </ul>
       </div>
+      {/* 以下、音声認識ボタン */}
       <button
         onClick={() => {
           setIsRecording((prev) => !prev);
@@ -199,6 +182,23 @@ export default function Chat() {
       <div>
         <p>途中経過：{transcript}</p>
         <p>解析：{text}</p>
+      </div>
+      {/* 以下、メッセージ投稿ボタン */}
+      <div>
+        <h1>メッセージ送信フォーム</h1>
+        <form onSubmit={handleSubmit_post}>
+          <textarea
+            value={savetext}
+            onChange={(e) => setSaveText(e.target.value)}
+            placeholder="メッセージを入力してください"
+            rows="4" // 行数を指定
+            style={{ width: "100%", height: "150px", overflowY: "auto" }} // スタイル直書き
+          />
+          <button type="submit">送信</button>
+        </form>
+      </div>
+      <div>
+        <button onClick={handleSubmit_summary}>要約</button>
       </div>
     </main>
   );
