@@ -472,3 +472,33 @@ def insert_chatpostgpt(mymodel, values):
         session.close()
 
     return "inserted"
+
+
+def chatpostinsert_rawdatetime(mymodel, values):
+    # session構築
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # # datetime文字列をdatetimeオブジェクトへ変換
+    # recording_start_time_str = values.get("recording_start_datetime")
+    # recording_end_time_str = values.get("recording_end_datetime")
+    # values["recording_start_datetime"] = datetime.strptime(recording_start_time_str, '%Y-%m-%d %H:%M:%S.%f')
+    # values["recording_end_datetime"] = datetime.strptime(recording_end_time_str, '%Y-%m-%d %H:%M:%S.%f')
+
+    query = insert(mymodel).values(values)
+
+    try:
+        # トランザクションを開始
+        with session.begin():
+            # データの挿入
+            result = session.execute(query)
+    except sqlalchemy.exc.IntegrityError:
+        print("挿入に失敗しました")
+        session.rollback()
+        return "error"
+
+    finally:
+        # セッションを閉じる
+        session.close()
+
+    return "inserted"

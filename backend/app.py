@@ -15,6 +15,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+import textwrap  # テキストの分割
 import dummy_message_and_prompt  # 　プロンプト検討用
 
 # Azure Database for MySQL
@@ -198,6 +199,7 @@ def set_chatsummary():
     gpt_summaries = json.loads(gpt_summaries)
     print(gpt_summaries)
 
+    # 要約結果をChatSummariesへ格納
     for category, details in gpt_summaries.items():
 
         item_id = crud.get_item_id(mymodels.Items, category)
@@ -219,10 +221,10 @@ def set_chatsummary():
     # 　Unicodeエスケープしない
     result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
 
-    # 要約後にはRoadmapsの更新を行う
+    # 要約格納後にRoadmapsの更新を行う
     updateroadmap.update_roadmaps(values_all.get("parent_user_id"))
 
-    return result, 200
+    return gpt_summaries, 200
 
 
 # ロードマップの読み込み
@@ -328,9 +330,6 @@ def get_chatpsotgpt():
     message_df = pd.concat([system_message_df, message_df])
     message_dict = message_df.to_dict(orient="records")
 
-    print(message_dict)
-    print("++++++++++++++++++++++++++++++++++++++++;")
-
     # GPTへ指示を出す部分
     client = OpenAI()
     response = client.chat.completions.create(
@@ -345,9 +344,6 @@ def get_chatpsotgpt():
     question = response.choices[0].message.content
     # GPTへ指示を出す部分ここまで
 
-    print(question)
-    print("+++++++++++++++++++++++++++++++++++")
-
     # 返答内容をchatpostgptへ格納する
     values = {
         "parent_user_id": values_all.get("parent_user_id"),
@@ -359,5 +355,44 @@ def get_chatpsotgpt():
 
     # # 　Unicodeエスケープしない
     # result_json = chatpost_small_df.to_json(orient="records", force_ascii=False)
+
+    return result, 200
+
+
+# チャットの生データを挿入する
+@app.route("/chatposttext", methods=["POST"])
+def create_chattext():
+    values = request.get_json()
+    # values = {
+    #     "parent_user_id": XX,
+    #     "child_user_id": YY,
+    #     "content": "テキスト（長文）",
+    # }
+    print(values)
+
+    parent_user_id = values.get("parent_user_id")
+    child_user_id = values.get("child_user_id")
+    content = values.get("content")
+
+    # ChatPostへ投稿用の開始時間の取得
+    recording_start = datetime.utcnow()
+
+    content_list = textwrap.wrap(content, 50)  # 文章を50文字毎に分割
+    for part_of_contennt in content_list:
+        values = {"parent_user_id": parent_user_id, "child_user_id": child_user_id, "content": part_of_contennt}
+
+        result = crud.chatrawinsert(mymodels.ChatRawDatas, values)
+
+    # ChatPostへ投稿用の終了時間の取得
+    recording_end = datetime.utcnow()
+
+    values = {
+        "parent_user_id": parent_user_id,
+        "child_user_id": child_user_id,
+        "recording_start_datetime": recording_start,
+        "recording_end_datetime": recording_end,
+    }
+
+    result = crud.chatpostinsert_rawdatetime(mymodels.ChatPosts, values)
 
     return result, 200
