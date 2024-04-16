@@ -10,9 +10,10 @@ import requests
 from datetime import datetime
 import pytz
 
-import openai
-from openai import OpenAI
-from dotenv import load_dotenv
+# 要約関連をコメントアウト
+# import openai
+# from openai import OpenAI
+# from dotenv import load_dotenv
 import os
 
 import textwrap  # テキストの分割
@@ -23,10 +24,10 @@ import dummy_message_and_prompt  # 　プロンプト検討用
 app = Flask(__name__)
 CORS(app)
 
+# 要約関連をコメントアウト
 # 環境変数を使用する
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-os.getenv("")
+# openai.api_key = os.getenv('OPENAI_API_KEY')
+# os.getenv("")
 
 
 @app.route("/")
@@ -161,37 +162,37 @@ def set_chatsummary():
     message_dict = message_df.to_dict(orient="records")
 
     # GPT要約の部分
-    client = OpenAI()
-    response = client.chat.completions.create(
-        # model="gpt-4",
-        # model="gpt-4-1106-preview",
-        model="gpt-3.5-turbo",
-        response_format={"type": "json_object"},
-        # チャット履歴から渡す時はこちら
-        # messages=message_dict,
-        # 親子会話をダミーデータから渡す時はこちら
-        messages=[
-            {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
-            {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
-            {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
-        ],
-        temperature=0.2,
-        max_tokens=500,
-    )
+    # client = OpenAI()
+    # response = client.chat.completions.create(
+    #     # model="gpt-4",
+    #     # model="gpt-4-1106-preview",
+    #     model="gpt-3.5-turbo",
+    #     response_format={"type": "json_object"},
+    #     # チャット履歴から渡す時はこちら
+    #     # messages=message_dict,
+    #     # 親子会話をダミーデータから渡す時はこちら
+    #     messages=[
+    #         {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
+    #         {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
+    #         {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
+    #     ],
+    #     temperature=0.2,
+    #     max_tokens=500,
+    # )
 
-    gpt_summaries = response.choices[0].message.content
+    # gpt_summaries = response.choices[0].message.content
     # GPT要約の部分ここまで
 
     # GPTのダミー回答（動作確認する際はこちらを使う）
-    # gpt_summaries = {
-    #     "life_plan": {"1": "海外旅行の話を再度聞きたい", "2": "遺言や葬儀の希望、遺産の話をゆっくり話し合いたい"},
-    #     "assets_money": {"1": "古い家や土地の遺産分割について"},
-    #     "inheritance": {"1": "遺言に古い家や土地の処分方法を記載", "2": "遺産分割を家族で平和に解決したい"},
-    #     "funeral_grave": {"1": "自然葬を希望", "2": "葬儀のスタイルについて具体的に話し合い"},
-    #     "health_illness": {"1": "none"},
-    #     "caregiving": {"1": "none"},
-    # }
-    # gpt_summaries = json.dumps(gpt_summaries, indent=4, ensure_ascii=False)
+    gpt_summaries = {
+        "life_plan": {"1": "海外旅行の話を再度聞きたい", "2": "遺言や葬儀の希望、遺産の話をゆっくり話し合いたい"},
+        "assets_money": {"1": "古い家や土地の遺産分割について"},
+        "inheritance": {"1": "遺言に古い家や土地の処分方法を記載", "2": "遺産分割を家族で平和に解決したい"},
+        "funeral_grave": {"1": "自然葬を希望", "2": "葬儀のスタイルについて具体的に話し合い"},
+        "health_illness": {"1": "none"},
+        "caregiving": {"1": "none"},
+    }
+    gpt_summaries = json.dumps(gpt_summaries, indent=4, ensure_ascii=False)
     # GPTのダミー回答ここまで
 
     gpt_summaries = json.loads(gpt_summaries)
@@ -329,18 +330,21 @@ def get_chatpsotgpt():
     message_dict = message_df.to_dict(orient="records")
 
     # GPTへ指示を出す部分
-    client = OpenAI()
-    response = client.chat.completions.create(
-        # model="gpt-4",
-        # model="gpt-4-1106-preview",
-        model="gpt-3.5-turbo",
-        messages=message_dict,
-        temperature=0.2,
-        max_tokens=500,
-    )
+    # client = OpenAI()
+    # response = client.chat.completions.create(
+    #     # model="gpt-4",
+    #     # model="gpt-4-1106-preview",
+    #     model="gpt-3.5-turbo",
+    #     messages=message_dict,
+    #     temperature=0.2,
+    #     max_tokens=500,
+    # )
 
-    question = response.choices[0].message.content
+    # question = response.choices[0].message.content
     # GPTへ指示を出す部分ここまで
+
+    # ダミー回答
+    question = "頑張ってください！まずは近況から聞くのが良いと思います"
 
     # 返答内容をchatpostgptへ格納する
     values = {
