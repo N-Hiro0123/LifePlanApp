@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import fetchRoadmapDtails from "./fetchRoadmapDtails";
+import itemMap from "../itemMap";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -35,7 +36,7 @@ export default function RoadmapDatails() {
         </p>
       </Link>
       <br></br>
-      <h1>{params.item_name}</h1>
+      <h1>{itemMap[params.item_name]}</h1>
       <h1>Roadmap</h1>
       <p>input_num: {roadmapInfo[0]?.["item_input_num"]}</p>
       <p>state: {roadmapInfo[0]?.["item_state"]}</p>

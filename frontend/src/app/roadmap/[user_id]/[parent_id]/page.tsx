@@ -3,6 +3,8 @@ import { useParams, useRouter } from "next/navigation";
 import fetchRoadmap from "./fetchRoadmap";
 import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
+import itemMap from "./itemMap";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -55,7 +57,7 @@ export default function Roadmap() {
             >
               <p>
                 <strong>
-                  Item_id --link--: {itemIdToNameMap[log.item_id]}
+                  Item_id --link--: {itemMap[itemIdToNameMap[log.item_id]]}
                 </strong>
               </p>
             </Link>
