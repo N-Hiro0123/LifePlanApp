@@ -107,4 +107,8 @@ def readchalogsmall(values, count):
     # 末尾のcount行数だけ取り出す
     chatpost_small_df = chatposts_all_df.tail(count)
 
+    # count==0の時のみ、後段でエラーが発生しない程度に空のDataFrameに置き換える
+    if count == 0:
+        chatpost_small_df = pd.DataFrame([{"role": "user", "content": "None"}])
+
     return chatpost_small_df
