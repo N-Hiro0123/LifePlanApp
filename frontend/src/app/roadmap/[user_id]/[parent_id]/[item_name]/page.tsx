@@ -2,6 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import fetchRoadmapDtails from "./fetchRoadmapDtails";
 import itemMap from "../itemMap";
+import stateMap from "../stateMap";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -32,23 +33,24 @@ export default function RoadmapDatails() {
     <div>
       <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
         <p>
-          <strong>Roadmap**link**</strong>
+          <strong>ロードマップ画面へ</strong>
         </p>
       </Link>
       <br></br>
-      <h1>{itemMap[params.item_name]}</h1>
-      <h1>Roadmap</h1>
-      <p>input_num: {roadmapInfo[0]?.["item_input_num"]}</p>
-      <p>state: {roadmapInfo[0]?.["item_state"]}</p>
+      <h1>
+        <strong>{itemMap[params.item_name]}</strong>
+      </h1>
+      <p>入力数: {roadmapInfo[0]?.["item_input_num"]}</p>
+      <p>状態: {stateMap[roadmapInfo[0]?.["item_state"]]}</p>
 
       <br></br>
-      <h1>Manual Summaries</h1>
+      <h1>手動要約</h1>
       {/* <p>
         manual_summary_id（編集する時に使う）:
         {manualSummariesInfo[0]?.["manual_summary_id"]}
       </p> */}
-      <p>input_num: {manualSummariesInfo[0]?.["content"]}</p>
-      <p>update_at: {manualSummariesInfo[0]?.["updated_at"]}</p>
+      <p>{manualSummariesInfo[0]?.["content"]}</p>
+      <p>日時:　 {manualSummariesInfo[0]?.["updated_at"]}</p>
 
       <br></br>
       <br></br>
@@ -56,8 +58,8 @@ export default function RoadmapDatails() {
         {chatSummariesInfo.map((log, index) => (
           <li key={index}>
             {/* <p>chat_summary_id（編集する時に使う）: {log["chat_summary_id"]}</p> */}
-            <p>content:{log["content"]}</p>
-            <p>created_at:{log["created_at"]}</p>
+            <p>内容:　{log["content"]}</p>
+            <p>日時:　{log["created_at"]}</p>
             <br></br>
           </li>
         ))}

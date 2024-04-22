@@ -318,7 +318,7 @@ values = {
 
 for i in range(1, 7):
     values["item_id"] = i
-    values["content"] = "要約なし（ここに要約結果が保存されます）"
+    values["content"] = "（ここに要約結果が保存されます）"
     InsertValue(mymodel, values)  # DBへ値を挿入
 
 ##################################################################################
@@ -335,5 +335,5 @@ values = {
 
 for i in range(1, 7):
     values["item_id"] = i
-    values["content"] = f"項目{i}の手動要約のメモ"
+    values["content"] = f"（手動でメモを記入できます）"
     InsertValue(mymodel, values)  # DBへ値を挿入

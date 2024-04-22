@@ -4,6 +4,7 @@ import fetchRoadmap from "./fetchRoadmap";
 import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
 import itemMap from "./itemMap";
+import stateMap from "./stateMap";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -40,15 +41,17 @@ export default function Roadmap() {
     <div>
       <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
         <p>
-          <strong>Chat**link**</strong>
+          <strong>チャット</strong>
         </p>
       </Link>
       <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chatlog`}>
         <p>
-          <strong>Chatlog**link**</strong>
+          <strong>チャット履歴</strong>
         </p>
       </Link>
-      <h1>Roadmap</h1>
+      <br></br>
+      <h1>■■ロードマップ画面■■</h1>
+      <br></br>
       <ul>
         {roadmapInfo.map((log, index) => (
           <li key={index}>
@@ -56,14 +59,14 @@ export default function Roadmap() {
               href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[log.item_id]}`}
             >
               <p>
-                <strong>
-                  Item_id --link--: {itemMap[itemIdToNameMap[log.item_id]]}
-                </strong>
+                <strong> {itemMap[itemIdToNameMap[log.item_id]]}</strong>
               </p>
             </Link>
-            <p>input_num: {log.item_input_num}</p>
-            <p>State:{log.item_state}</p>
-            <p>Update_At: {log.item_updated_at}</p>
+            <p>
+              [{stateMap[log.item_state]}] 　　入力数： {log.item_input_num}
+            </p>
+            {/* <p>状態:{stateMap[log.item_state]}</p> */}
+            {/* <p>Update_At: {log.item_updated_at}</p> */}
             <br></br>
           </li>
         ))}

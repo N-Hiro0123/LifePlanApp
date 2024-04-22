@@ -154,10 +154,10 @@ export default function Chat() {
       <div>
         <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
           <p>
-            <strong>Roadmap**link**</strong>
+            <strong>ロードマップ画面へ</strong>
           </p>
         </Link>
-        <h1>Chat Log</h1>
+        <h1>履歴</h1>
         <ul>
           {chatlogInfo.map((log, index) => (
             <li key={index}>
