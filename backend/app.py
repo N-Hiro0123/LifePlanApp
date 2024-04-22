@@ -147,6 +147,8 @@ def set_chatsummary():
 
     # ユーザーとGPTのチャット履歴を時間順に並べて、最新ものをcount数だけ取得する
     chatpost_small_df = readchatlog.readchalogsmall(values, count)
+    # print(chatpost_small_df)
+    # print("++++++++++++++++++++++++++++++++++++++++++++;;")
     # "role"と"content"だけ抜き出す
     message_df = chatpost_small_df[["role", "content"]]
 
@@ -169,13 +171,13 @@ def set_chatsummary():
         model="gpt-3.5-turbo",
         response_format={"type": "json_object"},
         # チャット履歴から渡す時はこちら
-        # messages=message_dict,
+        messages=message_dict,
         # 親子会話をダミーデータから渡す時はこちら
-        messages=[
-            {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
-            {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
-            {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
-        ],
+        # messages=[
+        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message()},
+        #     {"role": "user", "content": dummy_message_and_prompt.make_dummy_message()},
+        #     {"role": "system", "content": dummy_message_and_prompt.make_system_message2()},
+        # ],
         temperature=0.2,
         max_tokens=500,
     )
