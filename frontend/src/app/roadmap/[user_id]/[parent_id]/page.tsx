@@ -37,37 +37,60 @@ export default function Roadmap() {
   }, [itemInfo]);
 
   return (
-    <div>
-      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
-        <p>
-          <strong>Chat**link**</strong>
-        </p>
-      </Link>
-      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chatlog`}>
-        <p>
-          <strong>Chatlog**link**</strong>
-        </p>
-      </Link>
-      <h1>Roadmap</h1>
-      <ul>
-        {roadmapInfo.map((log, index) => (
-          <li key={index}>
-            <Link
-              href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[log.item_id]}`}
+    <div className="container">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-base-100">
+        <div className="w-full max-w-md p-4 bg-white rounded-lg shadow">
+          <div className="flex justify-between items-center mb-6">
+            <a
+              href="/menu"
+              className="btn btn-square btn-ghost"
+              style={{ width: "50px", height: "50px" }}
             >
-              <p>
-                <strong>
-                  Item_id --link--: {itemMap[itemIdToNameMap[log.item_id]]}
-                </strong>
-              </p>
-            </Link>
-            <p>input_num: {log.item_input_num}</p>
-            <p>State:{log.item_state}</p>
-            <p>Update_At: {log.item_updated_at}</p>
-            <br></br>
-          </li>
-        ))}
-      </ul>
+              <img
+                src="/Menu.svg"
+                alt="メニュー"
+                style={{ width: "25%", height: "25%" }}
+              />
+            </a>
+            <h1 className="text-xl font-bold text-primary">
+              親子でらくらく！大人の未来計画
+            </h1>
+          </div>
+          <ul className="steps steps-vertical mx-auto">
+            {roadmapInfo.map((item, index) => (
+              <li
+                key={index}
+                className={`step ${
+                  item.isComplete ? "bg-accent" : "bg-base-300"
+                } ${
+                  item.isComplete ? "text-primary-content" : "text-base-content"
+                }`}
+              >
+                {item.title}
+                {item.isComplete && (
+                  <span className="label label-primary">済</span>
+                )}
+                <span className="step-secondary">
+                  {item.timesCompleted} 回目
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="text-center mt-6">
+            <a
+              href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}
+              className="btn btn-circle btn-primary btn-sm"
+              style={{ width: "50px", height: "50px" }}
+            >
+              <img
+                src="/PlusButton.svg"
+                alt="+ボタン"
+                style={{ width: "15%", height: "15%" }}
+              />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

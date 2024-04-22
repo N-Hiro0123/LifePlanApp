@@ -149,56 +149,72 @@ export default function Chat() {
   };
 
   return (
-    <main>
+    <main className="bg-gray-100 min-h-screen p-4">
       {/* 以下、会話履歴表示部 */}
-      <div>
+      <div className="mb-4">
         <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
-          <p>
+          <p className="text-blue-600 hover:underline">
             <strong>Roadmap**link**</strong>
           </p>
         </Link>
-        <h1>Chat Log</h1>
+        <h1 className="text-2xl font-bold">Chat Log</h1>
         <ul>
           {chatlogInfo.map((log, index) => (
-            <li key={index}>
-              <p>Posted by: {log.role}</p>
-              <p>Created At: {log.chatpost_created_at}</p>
-              <p>
-                Content: <strong>{log.content}</strong>
-              </p>
-              <br></br>
+            <li key={index} className="mb-2 last:mb-0">
+              <div
+                className={`p-4 rounded-lg ${
+                  log.role === "sent"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-300 text-black"
+                }`}
+              >
+                <p className="text-sm">Posted by: {log.role}</p>
+                <p className="text-sm">Created At: {log.chatpost_created_at}</p>
+                <p className="mt-2">
+                  Content: <strong>{log.content}</strong>
+                </p>
+                <br></br>
+              </div>
             </li>
           ))}
         </ul>
       </div>
       {/* 以下、音声認識ボタン */}
-      <button
-        onClick={() => {
-          setIsRecording((prev) => !prev);
-        }}
-      >
-        {isRecording ? "停止" : "録音開始"}
-      </button>
-      <div>
-        <p>途中経過：{transcript}</p>
-        <p>解析：{text}</p>
+      <div className="my-4">
+        <button
+          onClick={() => {
+            setIsRecording((prev) => !prev);
+          }}
+          className={`btn ${isRecording ? "btn-error" : "btn-primary"}`}
+        >
+          {isRecording ? "停止" : "録音開始"}
+        </button>
+        <div className="mt-2">
+          <p>途中経過：{transcript}</p>
+          <p>解析：{text}</p>
+        </div>
       </div>
       {/* 以下、メッセージ投稿ボタン */}
-      <div>
-        <h1>メッセージ送信フォーム</h1>
-        <form onSubmit={handleSubmit_post}>
+      <div className="bg-white p-4 rounded-lg shadow max-w-2xl mx-auto mb-4">
+        <h1 className="text-2xl font-bold mb-4">メッセージ送信フォーム</h1>
+        <form onSubmit={handleSubmit_post} className="flex flex-col">
           <textarea
             value={savetext}
             onChange={(e) => setSaveText(e.target.value)}
             placeholder="メッセージを入力してください"
             rows="4" // 行数を指定
-            style={{ width: "100%", height: "150px", overflowY: "auto" }} // スタイル直書き
+            className="textarea textarea-bordered h-36 mb-4"
           />
-          <button type="submit">送信</button>
+          <button type="submit" className="btn btn-primary">
+            送信
+          </button>
         </form>
       </div>
-      <div>
-        <button onClick={handleSubmit_summary}>要約</button>
+      {/* 保存ボタン */}
+      <div className="text-center">
+        <button onClick={handleSubmit_summary} className="btn">
+          保存
+        </button>
       </div>
     </main>
   );
