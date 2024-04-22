@@ -61,17 +61,19 @@ export default function Roadmap() {
               <li
                 key={index}
                 className={`step ${
-                  item.isComplete ? "bg-accent" : "bg-base-300"
+                  item.input_state == "completed" ? "bg-accent" : "bg-base-300"
                 } ${
-                  item.isComplete ? "text-primary-content" : "text-base-content"
+                  item.input_state == "completed"
+                    ? "text-primary-content"
+                    : "text-base-content"
                 }`}
               >
-                {item.title}
-                {item.isComplete && (
+                {itemMap[itemIdToNameMap[item.item_id]]}
+                {item.input_state == "completed" && (
                   <span className="label label-primary">済</span>
                 )}
                 <span className="step-secondary">
-                  {item.timesCompleted} 回目
+                  {item.item_input_num} 回目
                 </span>
               </li>
             ))}
