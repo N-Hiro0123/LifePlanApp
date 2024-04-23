@@ -65,7 +65,11 @@ export default function Roadmap() {
 
               return (
                 <li key={index} data-content={item.item_input_num} className={stepClass}>
-                  {itemMap[itemIdToNameMap[item.item_id]]}
+                  <Link href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[item.item_id]}`}>
+                    <p>
+                      <strong> {itemMap[itemIdToNameMap[item.item_id]]}</strong>
+                    </p>
+                  </Link>
                 </li>
               );
             })}
