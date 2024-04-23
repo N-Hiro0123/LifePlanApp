@@ -41,54 +41,38 @@ export default function Roadmap() {
       <div className="flex flex-col justify-center items-center min-h-screen bg-base-100">
         <div className="w-full max-w-md p-4 bg-white rounded-lg shadow">
           <div className="flex justify-between items-center mb-6">
-            <a
-              href="/menu"
-              className="btn btn-square btn-ghost"
-              style={{ width: "50px", height: "50px" }}
-            >
-              <img
-                src="/Menu.svg"
-                alt="メニュー"
-                style={{ width: "25%", height: "25%" }}
-              />
+            <a href="/menu" className="btn btn-square btn-ghost" style={{ width: "50px", height: "50px" }}>
+              <img src="/Menu.svg" alt="メニュー" style={{ width: "25%", height: "25%" }} />
             </a>
-            <h1 className="text-xl font-bold text-primary">
-              親子でらくらく！大人の未来計画
-            </h1>
+            <h1 className="text-xl font-bold text-primary">親子でらくらく！大人の未来計画</h1>
           </div>
-          <ul className="steps steps-vertical mx-auto">
-            {roadmapInfo.map((item, index) => (
-              <li
-                key={index}
-                className={`step ${
-                  item.input_state == "completed" ? "bg-accent" : "bg-base-300"
-                } ${
-                  item.input_state == "completed"
-                    ? "text-primary-content"
-                    : "text-base-content"
-                }`}
-              >
-                {itemMap[itemIdToNameMap[item.item_id]]}
-                {item.input_state == "completed" && (
-                  <span className="label label-primary">済</span>
-                )}
-                <span className="step-secondary">
-                  {item.item_input_num} 回目
-                </span>
-              </li>
-            ))}
+          <ul className="steps steps-vertical">
+            {roadmapInfo.map((item, index) => {
+              let stepClass = "";
+
+              switch (item.item_state) {
+                case "completed":
+                  stepClass = "step step-primary";
+                  break;
+                case "entering":
+                  stepClass = "step step-primary";
+                  break;
+                case "unfilled":
+                default:
+                  stepClass = "step";
+                  break;
+              }
+
+              return (
+                <li key={index} data-content={item.item_input_num} className={stepClass}>
+                  {itemMap[itemIdToNameMap[item.item_id]]}
+                </li>
+              );
+            })}
           </ul>
           <div className="text-center mt-6">
-            <a
-              href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}
-              className="btn btn-circle btn-primary btn-sm"
-              style={{ width: "50px", height: "50px" }}
-            >
-              <img
-                src="/PlusButton.svg"
-                alt="+ボタン"
-                style={{ width: "15%", height: "15%" }}
-              />
+            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`} className="btn btn-circle btn-primary btn-sm" style={{ width: "50px", height: "50px" }}>
+              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "15%", height: "15%" }} />
             </a>
           </div>
         </div>
