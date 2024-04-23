@@ -4,6 +4,7 @@ import fetchRoadmap from "./fetchRoadmap";
 import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
 import itemMap from "./itemMap";
+import getStateClass from "./getStepClass";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -47,32 +48,15 @@ export default function Roadmap() {
             <h1 className="text-xl font-bold text-primary">親子でらくらく！大人の未来計画</h1>
           </div>
           <ul className="steps steps-vertical">
-            {roadmapInfo.map((item, index) => {
-              let stepClass = "";
-
-              switch (item.item_state) {
-                case "completed":
-                  stepClass = "step step-primary";
-                  break;
-                case "entering":
-                  stepClass = "step step-primary";
-                  break;
-                case "unfilled":
-                default:
-                  stepClass = "step";
-                  break;
-              }
-
-              return (
-                <li key={index} data-content={item.item_input_num} className={stepClass}>
-                  <Link href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[item.item_id]}`}>
-                    <p>
-                      <strong> {itemMap[itemIdToNameMap[item.item_id]]}</strong>
-                    </p>
-                  </Link>
-                </li>
-              );
-            })}
+            {roadmapInfo.map((item, index) => (
+              <li key={index} data-content={item.item_input_num} className={getStateClass(item.item_state)}>
+                <Link href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[item.item_id]}`}>
+                  <p>
+                    <strong> {itemMap[itemIdToNameMap[item.item_id]]}</strong>
+                  </p>
+                </Link>
+              </li>
+            ))}
           </ul>
           <div className="text-center mt-6">
             <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`} className="btn btn-circle btn-primary btn-sm" style={{ width: "50px", height: "50px" }}>
