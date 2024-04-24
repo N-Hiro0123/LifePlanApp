@@ -31,3 +31,16 @@ body {
     text-wrap: balance;
   }
 }
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 40px;
+  }
+}

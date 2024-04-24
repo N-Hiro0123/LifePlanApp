@@ -4,6 +4,8 @@ import fetchRoadmap from "./fetchRoadmap";
 import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
 import itemMap from "./itemMap";
+import getStateClass from "./getStepClass";
+import stateMap1 from "./stateMap1";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -37,37 +39,40 @@ export default function Roadmap() {
   }, [itemInfo]);
 
   return (
-    <div>
-      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
-        <p>
-          <strong>Chat**link**</strong>
-        </p>
-      </Link>
-      <Link href={`/roadmap/${params.user_id}/${params.parent_id}/chatlog`}>
-        <p>
-          <strong>Chatlog**link**</strong>
-        </p>
-      </Link>
-      <h1>Roadmap</h1>
-      <ul>
-        {roadmapInfo.map((log, index) => (
-          <li key={index}>
-            <Link
-              href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[log.item_id]}`}
-            >
-              <p>
-                <strong>
-                  Item_id --link--: {itemMap[itemIdToNameMap[log.item_id]]}
-                </strong>
-              </p>
-            </Link>
-            <p>input_num: {log.item_input_num}</p>
-            <p>State:{log.item_state}</p>
-            <p>Update_At: {log.item_updated_at}</p>
-            <br></br>
-          </li>
-        ))}
-      </ul>
+    <div className="container">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-base-100">
+        <div className="w-full max-w-md p-4 bg-white rounded-lg shadow text-center">
+          {" "}
+          {/* Added text-center */}
+          <div className="flex justify-between items-center mb-6">
+            <a href="/menu" className="btn btn-square btn-ghost" style={{ width: "50px", height: "50px" }}>
+              <img src="/Menu.svg" alt="メニュー" style={{ width: "100%", height: "100%" }} />
+            </a>
+            <h1 className="text-xl font-bold text-neutral">親子でらくらく！大人の未来計画</h1>
+          </div>
+          <ul className="steps steps-vertical mx-auto">
+            {" "}
+            {/* Added mx-auto */}
+            {roadmapInfo.map((item, index) => (
+              <li key={index} data-content={stateMap1[item.item_state]} className={getStateClass(item.item_state)}>
+                <Link href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[item.item_id]}`}>
+                  <p>
+                    <strong>
+                      {" "}
+                      {item.item_input_num} {"　"} {itemMap[itemIdToNameMap[item.item_id]]}
+                    </strong>
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-center items-center mt-4">
+            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
+              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "80%", height: "80%" }} />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import getServerTime from "./getServerTime";
@@ -26,9 +26,9 @@ export default function Chat() {
   const [text, setText] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
   const [savetext, setSaveText] = useState<string>(""); //投稿するテキスト
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
-    null
-  );
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+
+  const chatContainerRef = useRef(null); //画面のスクロールに使う
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -51,10 +51,27 @@ export default function Chat() {
       // true->falseの時の処理
       // 録音を停止
       recognition.stop();
-      // text内容を保存する場所に渡す
-      setSaveText(text);
-      // textを初期化
-      setText("");
+
+      //録音停止時に自動で投稿しない時に使う
+      // // text内容を保存する場所に渡す
+      // setSaveText(savetext + text);
+      // // textを初期化
+      // setText("");
+
+      // 投稿内容を自動で投稿する場合
+      const fetchChatText = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          content: text,
+        };
+        const res = await createChatText(values);
+        setPostComplete(res);
+      };
+
+      fetchChatText(); //テキストの投稿
+      setText(""); //初期化
+      setPostCount((prevCount) => prevCount + 1); // 投稿階数を＋１
     }
   }, [isRecording]);
 
@@ -115,6 +132,7 @@ export default function Chat() {
   useEffect(() => {
     if (postComplete || postGPTComplete) {
       const fetchGetChatlogSmall = async () => {
+        console.log(postCount);
         const values = {
           parent_user_id: params.parent_id,
           child_user_id: params.user_id,
@@ -148,57 +166,79 @@ export default function Chat() {
     router.push(`./`); //ロードマップの画面に戻る
   };
 
+  // コンポーネントが更新されるたびに、スクロール位置を最下部に設定
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatlogInfo]); // chatlogInfoが更新されるたびに効果が再実行されます
+
   return (
-    <main>
+    <main className="bg-gray-100 min-h-screen p-4  flex flex-col  items-center">
       {/* 以下、会話履歴表示部 */}
-      <div>
-        <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
-          <p>
-            <strong>Roadmap**link**</strong>
-          </p>
-        </Link>
-        <h1>Chat Log</h1>
+      <div className="max-w-md w-full mb-4">
+        <div className="flex justify-between items-center">
+          <Link href={`/roadmap/${params.user_id}/${params.parent_id}`} legacyBehavior>
+            <a className="text-blue-600 hover:underline">
+              <img src="/Close.svg" alt="Close" style={{ width: "100px", height: "100px" }} />
+            </a>
+          </Link>
+
+          {/* 保存ボタン */}
+          <button onClick={handleSubmit_summary} className="btn btn-accent">
+            保存
+          </button>
+        </div>
+      </div>
+
+      {/* <h1 className="text-xl font-bold text-center">チャット</h1> */}
+
+      {/* 会話履歴表示部 */}
+      <div className="overflow-auto bottom-0 w-full max-w-md" style={{ maxHeight: "50vh" }} ref={chatContainerRef}>
         <ul>
           {chatlogInfo.map((log, index) => (
-            <li key={index}>
-              <p>Posted by: {log.role}</p>
-              <p>Created At: {log.chatpost_created_at}</p>
-              <p>
-                Content: <strong>{log.content}</strong>
-              </p>
-              <br></br>
+            <li key={index} className="mb-2 last:mb-0">
+              <div className={`p-4 rounded-lg ${log.role === "sent" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"}`}>
+                <p className="text-sm">Posted by: {log.role}</p>
+                <p className="text-sm">Created At: {log.chatpost_created_at}</p>
+                <p className="mt-2">
+                  Content: <strong>{log.content}</strong>
+                </p>
+                <br></br>
+              </div>
             </li>
           ))}
         </ul>
       </div>
-      {/* 以下、音声認識ボタン */}
-      <button
-        onClick={() => {
-          setIsRecording((prev) => !prev);
-        }}
-      >
-        {isRecording ? "停止" : "録音開始"}
-      </button>
-      <div>
-        <p>途中経過：{transcript}</p>
-        <p>解析：{text}</p>
-      </div>
       {/* 以下、メッセージ投稿ボタン */}
-      <div>
-        <h1>メッセージ送信フォーム</h1>
-        <form onSubmit={handleSubmit_post}>
-          <textarea
-            value={savetext}
-            onChange={(e) => setSaveText(e.target.value)}
-            placeholder="メッセージを入力してください"
-            rows="4" // 行数を指定
-            style={{ width: "100%", height: "150px", overflowY: "auto" }} // スタイル直書き
-          />
-          <button type="submit">送信</button>
-        </form>
-      </div>
-      <div>
-        <button onClick={handleSubmit_summary}>要約</button>
+      {/* 以下、メッセージ投稿フォーム */}
+      <div className="fixed bottom-0 w-full bg-white p-4 rounded-t-lg shadow max-w-md mx-auto">
+        <h1 className="text-xl font-bold text-center mb-4">メッセージ送信フォーム</h1>
+
+        {/* テキストエリアとマイクアイコン */}
+        <div className="flex items-center mb-4">
+          <textarea value={savetext} onChange={(e) => setSaveText(e.target.value)} placeholder="メッセージを入力してください" rows="3" className="textarea textarea-bordered flex-grow mr-4" />
+          <button
+            onClick={() => {
+              setIsRecording((prev) => !prev); // 録音の状態を切り替える
+            }}
+            className="btn"
+            aria-label={isRecording ? "録音を停止" : "録音を開始"}
+          >
+            <img src={isRecording ? "/Microphone_R.svg" : "/Microphone_B.svg"} alt={isRecording ? "録音を停止" : "録音を開始"} />
+          </button>
+        </div>
+
+        {/* 途中経過、解析、送信ボタン */}
+        <div className="flex justify-between items-center">
+          <div>
+            <p>途中経過：{transcript}</p>
+            <p>解析：{text}</p>
+          </div>
+          <button onClick={handleSubmit_post} type="submit" className="btn btn-accent">
+            送信
+          </button>
+        </div>
       </div>
     </main>
   );
