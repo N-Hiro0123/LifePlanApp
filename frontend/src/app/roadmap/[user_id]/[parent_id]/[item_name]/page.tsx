@@ -26,10 +26,10 @@ export default function RoadmapDatails() {
 
   return (
     <div>
-      <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
-        <p>
-          <strong>Roadmap**link**</strong>
-        </p>
+      <Link href={`/roadmap/${params.user_id}/${params.parent_id}`} legacyBehavior>
+        <a className="text-blue-600 hover:underline">
+          <img src="/Close.svg" alt="Close" style={{ width: "100px", height: "100px" }} />
+        </a>
       </Link>
       <br></br>
       <h1>{itemMap[params.item_name]}</h1>
