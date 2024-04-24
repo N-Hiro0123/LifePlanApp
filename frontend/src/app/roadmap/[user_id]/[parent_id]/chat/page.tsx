@@ -26,9 +26,7 @@ export default function Chat() {
   const [text, setText] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
   const [savetext, setSaveText] = useState<string>(""); //投稿するテキスト
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
-    null
-  );
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -149,25 +147,31 @@ export default function Chat() {
   };
 
   return (
-    <main className="bg-gray-100 min-h-screen p-4">
+    <main className="bg-gray-100 min-h-screen p-4  flex flex-col  items-center">
       {/* 以下、会話履歴表示部 */}
-      <div className="mb-4">
-        <Link href={`/roadmap/${params.user_id}/${params.parent_id}`}>
-          <p className="text-blue-600 hover:underline">
-            <strong>Roadmap**link**</strong>
-          </p>
-        </Link>
-        <h1 className="text-2xl font-bold">Chat Log</h1>
+      <div className="max-w-2xl w-full mb-4">
+        <div className="flex justify-between items-center">
+          <Link href={`/roadmap/${params.user_id}/${params.parent_id}`} legacyBehavior>
+            <a className="text-blue-600 hover:underline">
+              <img src="/Close.svg" alt="Close" style={{ width: "100px", height: "100px" }} />
+            </a>
+          </Link>
+
+          {/* 保存ボタン */}
+          <button onClick={handleSubmit_summary} className="btn btn-accent">
+            保存
+          </button>
+        </div>
+      </div>
+
+      <h1 className="text-2xl font-bold text-center">チャット</h1>
+
+      {/* 会話履歴表示部 */}
+      <div className="overflow-auto">
         <ul>
           {chatlogInfo.map((log, index) => (
             <li key={index} className="mb-2 last:mb-0">
-              <div
-                className={`p-4 rounded-lg ${
-                  log.role === "sent"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300 text-black"
-                }`}
-              >
+              <div className={`p-4 rounded-lg ${log.role === "sent" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"}`}>
                 <p className="text-sm">Posted by: {log.role}</p>
                 <p className="text-sm">Created At: {log.chatpost_created_at}</p>
                 <p className="mt-2">
@@ -179,42 +183,36 @@ export default function Chat() {
           ))}
         </ul>
       </div>
-      {/* 以下、音声認識ボタン */}
-      <div className="my-4">
-        <button
-          onClick={() => {
-            setIsRecording((prev) => !prev);
-          }}
-          className={`btn ${isRecording ? "btn-error" : "btn-primary"}`}
-        >
-          {isRecording ? "停止" : "録音開始"}
-        </button>
-        <div className="mt-2">
-          <p>途中経過：{transcript}</p>
-          <p>解析：{text}</p>
-        </div>
-      </div>
+
       {/* 以下、メッセージ投稿ボタン */}
       <div className="bg-white p-4 rounded-lg shadow max-w-2xl mx-auto mb-4">
-        <h1 className="text-2xl font-bold mb-4">メッセージ送信フォーム</h1>
-        <form onSubmit={handleSubmit_post} className="flex flex-col">
-          <textarea
-            value={savetext}
-            onChange={(e) => setSaveText(e.target.value)}
-            placeholder="メッセージを入力してください"
-            rows="4" // 行数を指定
-            className="textarea textarea-bordered h-36 mb-4"
-          />
-          <button type="submit" className="btn btn-primary">
+        <h1 className="text-2xl font-bold text-center mb-4">メッセージ送信フォーム</h1>
+        <div className="flex items-center">
+          {/* テキストエリア */}
+          <textarea value={savetext} onChange={(e) => setSaveText(e.target.value)} placeholder="メッセージを入力してください" rows="4" className="textarea textarea-bordered h-36 flex-grow mr-4" />
+
+          {/* マイクアイコン */}
+          <button
+            onClick={() => {
+              setIsRecording((prev) => !prev);
+            }}
+            className="btn"
+            aria-label={isRecording ? "録音を停止" : "録音を開始"}
+          >
+            <img src={isRecording ? "/Microphone_R.svg" : "/Microphone_B.svg"} alt={isRecording ? "録音を停止" : "録音を開始"} />
+          </button>
+        </div>
+        {/* 送信ボタン */}
+        <div className="text-center mt-4">
+          <button type="submit" className="btn btn-accent">
             送信
           </button>
-        </form>
+        </div>
       </div>
-      {/* 保存ボタン */}
-      <div className="text-center">
-        <button onClick={handleSubmit_summary} className="btn">
-          保存
-        </button>
+
+      <div className="mt-2">
+        <p>途中経過：{transcript}</p>
+        <p>解析：{text}</p>
       </div>
     </main>
   );

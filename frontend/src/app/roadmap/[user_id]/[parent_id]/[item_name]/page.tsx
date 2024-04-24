@@ -16,11 +16,7 @@ export default function RoadmapDatails() {
 
   useEffect(() => {
     const fetchAndSetDatas = async () => {
-      const Data = await fetchRoadmapDtails(
-        params.parent_id,
-        params.user_id,
-        params.item_name
-      );
+      const Data = await fetchRoadmapDtails(params.parent_id, params.user_id, params.item_name);
       setRoadmapInfo(Data["roadmap"]);
       setChatSummariesInfo(Data["chatsummaries"]);
       setManualSummariesInfo(Data["manualsummaries"]);

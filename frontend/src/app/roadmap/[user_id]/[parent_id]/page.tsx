@@ -43,9 +43,9 @@ export default function Roadmap() {
         <div className="w-full max-w-md p-4 bg-white rounded-lg shadow">
           <div className="flex justify-between items-center mb-6">
             <a href="/menu" className="btn btn-square btn-ghost" style={{ width: "50px", height: "50px" }}>
-              <img src="/Menu.svg" alt="メニュー" style={{ width: "25%", height: "25%" }} />
+              <img src="/Menu.svg" alt="メニュー" style={{ width: "100%", height: "100%" }} />
             </a>
-            <h1 className="text-xl font-bold text-primary">親子でらくらく！大人の未来計画</h1>
+            <h1 className="text-xl font-bold text-neutral">親子でらくらく！大人の未来計画</h1>
           </div>
           <ul className="steps steps-vertical">
             {roadmapInfo.map((item, index) => (
@@ -59,8 +59,8 @@ export default function Roadmap() {
             ))}
           </ul>
           <div className="text-center mt-6">
-            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`} className="btn btn-circle btn-primary btn-sm" style={{ width: "50px", height: "50px" }}>
-              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "15%", height: "15%" }} />
+            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`} className="btn btn-circle btn-accent btn-sm" style={{ width: "50px", height: "50px" }}>
+              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "100%", height: "100%" }} />
             </a>
           </div>
         </div>
