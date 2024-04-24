@@ -193,8 +193,12 @@ export default function Chat() {
 
           {/* マイクアイコン */}
           <button
-            onClick={() => {
-              setIsRecording((prev) => !prev);
+            onClick={(event) => {
+              if (isRecording) {
+                // 現在録音が進行中の場合のみ
+                handleSubmit_post(event); // 投稿処理を実行
+              }
+              setIsRecording((prev) => !prev); // 録音の状態を切り替える
             }}
             className="btn"
             aria-label={isRecording ? "録音を停止" : "録音を開始"}
@@ -204,7 +208,7 @@ export default function Chat() {
         </div>
         {/* 送信ボタン */}
         <div className="text-center mt-4">
-          <button type="submit" className="btn btn-accent">
+          <button onClick={handleSubmit_post} type="submit" className="btn btn-accent">
             送信
           </button>
         </div>
