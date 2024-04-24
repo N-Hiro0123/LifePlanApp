@@ -132,6 +132,7 @@ export default function Chat() {
   useEffect(() => {
     if (postComplete || postGPTComplete) {
       const fetchGetChatlogSmall = async () => {
+        console.log(postCount);
         const values = {
           parent_user_id: params.parent_id,
           child_user_id: params.user_id,
