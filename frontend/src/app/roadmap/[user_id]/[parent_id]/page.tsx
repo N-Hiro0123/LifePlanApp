@@ -58,9 +58,9 @@ export default function Roadmap() {
               </li>
             ))}
           </ul>
-          <div className="text-center mt-6">
-            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`} className="btn btn-circle btn-accent btn-sm" style={{ width: "50px", height: "50px" }}>
-              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "100%", height: "100%" }} />
+          <div className="text-center flex items-center mt-6">
+            <a href={`/roadmap/${params.user_id}/${params.parent_id}/chat`}>
+              <img src="/PlusButton.svg" alt="+ボタン" style={{ width: "20%", height: "20%" }} />
             </a>
           </div>
         </div>
