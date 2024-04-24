@@ -2,7 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import fetchRoadmapDtails from "./fetchRoadmapDtails";
 import itemMap from "../itemMap";
-import stateMap from "../stateMap";
+import stateMap from "./stateMap";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -36,12 +36,21 @@ export default function RoadmapDatails() {
               <img src="/Close.svg" alt="Close" style={{ width: "100px", height: "100px" }} />
             </a>
           </Link>
-          <h1 className="text-xl font-bold mb-4 text-left">{itemMap[params.item_name]}</h1>
-          <p className="text-gray-600">Input Number: {roadmapInfo[0]?.["item_input_num"]}</p>
-          <p className="text-gray-600 mb-4">State: {roadmapInfo[0]?.["item_state"]}</p>
+          <div className="grid grid-cols-5 gap-4 mb-4 w-full">
+            <div className="col-span-1">
+              <p className="text-gray-600 font-bold">{stateMap[roadmapInfo[0]?.["item_state"]]}</p>
+            </div>
+            <div className="col-span-1">
+              <p className="text-gray-600 font-bold">{roadmapInfo[0]?.["item_input_num"]}</p>
+            </div>
+            <div className="col-span-3">
+              <h1 className="text-xl font-bold whitespace-nowrap">{itemMap[params.item_name]}</h1>
+            </div>
+          </div>
           {/* Manual Summaries */}
+          <br></br>
           <div className="w-full max-w-xl space-y-4 text-left">
-            <h2 className="text-lg font-semibold">Manual Summaries</h2>
+            <h2 className="text-lg font-semibold">手動要約</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-8 py-5 text-left">
                 <p className="mt-1 text-sm text-gray-500">Content: {manualSummariesInfo[0]?.["content"]}</p>
@@ -50,8 +59,9 @@ export default function RoadmapDatails() {
             </div>
           </div>
           {/* AI Summariesの内容 */}
+          <br></br>
           <ul className="w-full max-w-xl space-y-4 text-left">
-            <h3 className="text-lg font-semibold">AI Summaries</h3>
+            <h3 className="text-lg font-semibold">AI要約</h3>
             {chatSummariesInfo.map((log, index) => (
               <li key={index} className="bg-gray-100 p-3 rounded-lg text-left">
                 <p className="text-gray-800">Content: {log["content"]}</p>

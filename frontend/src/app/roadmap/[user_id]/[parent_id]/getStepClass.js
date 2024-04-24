@@ -2,7 +2,7 @@ const getStepClass = (itemState) => {
   switch (itemState) {
     case "completed":
     case "entering":
-      return "step step-primary";
+      return "step step-accent";
     case "unfilled":
     default:
       return "step";

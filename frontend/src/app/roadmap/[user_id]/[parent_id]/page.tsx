@@ -5,6 +5,7 @@ import fetchItems from "./fetchItems";
 import createItemIdToNameMap from "./createItemIdToNameMap";
 import itemMap from "./itemMap";
 import getStateClass from "./getStepClass";
+import stateMap1 from "./stateMap1";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -53,10 +54,13 @@ export default function Roadmap() {
             {" "}
             {/* Added mx-auto */}
             {roadmapInfo.map((item, index) => (
-              <li key={index} data-content={item.item_input_num} className={getStateClass(item.item_state)}>
+              <li key={index} data-content={stateMap1[item.item_state]} className={getStateClass(item.item_state)}>
                 <Link href={`/roadmap/${params.user_id}/${params.parent_id}/${itemIdToNameMap[item.item_id]}`}>
                   <p>
-                    <strong> {itemMap[itemIdToNameMap[item.item_id]]}</strong>
+                    <strong>
+                      {" "}
+                      {item.item_input_num} {"　"} {itemMap[itemIdToNameMap[item.item_id]]}
+                    </strong>
                   </p>
                 </Link>
               </li>

@@ -194,7 +194,7 @@ export default function Chat() {
       {/* <h1 className="text-xl font-bold text-center">チャット</h1> */}
 
       {/* 会話履歴表示部 */}
-      <div className="overflow-auto w-full max-w-md" style={{ maxHeight: "50vh" }} ref={chatContainerRef}>
+      <div className="overflow-auto bottom-0 w-full max-w-md" style={{ maxHeight: "50vh" }} ref={chatContainerRef}>
         <ul>
           {chatlogInfo.map((log, index) => (
             <li key={index} className="mb-2 last:mb-0">
@@ -210,7 +210,6 @@ export default function Chat() {
           ))}
         </ul>
       </div>
-
       {/* 以下、メッセージ投稿ボタン */}
       {/* 以下、メッセージ投稿フォーム */}
       <div className="fixed bottom-0 w-full bg-white p-4 rounded-t-lg shadow max-w-md mx-auto">
