@@ -49,10 +49,27 @@ export default function Chat() {
       // true->falseの時の処理
       // 録音を停止
       recognition.stop();
-      // text内容を保存する場所に渡す
-      setSaveText(text);
-      // textを初期化
-      setText("");
+
+      //録音停止時に自動で投稿しない時に使う
+      // // text内容を保存する場所に渡す
+      // setSaveText(savetext + text);
+      // // textを初期化
+      // setText("");
+
+      // 投稿内容を自動で投稿する場合
+      const fetchChatText = async () => {
+        const values = {
+          parent_user_id: params.parent_id,
+          child_user_id: params.user_id,
+          content: text,
+        };
+        const res = await createChatText(values);
+        setPostComplete(res);
+      };
+
+      fetchChatText(); //テキストの投稿
+      setText(""); //初期化
+      setPostCount((prevCount) => prevCount + 1); // 投稿階数を＋１
     }
   }, [isRecording]);
 
@@ -193,11 +210,7 @@ export default function Chat() {
 
           {/* マイクアイコン */}
           <button
-            onClick={(event) => {
-              if (isRecording) {
-                // 現在録音が進行中の場合のみ
-                handleSubmit_post(event); // 投稿処理を実行
-              }
+            onClick={() => {
               setIsRecording((prev) => !prev); // 録音の状態を切り替える
             }}
             className="btn"
