@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import getServerTime from "./getServerTime";
@@ -27,6 +27,8 @@ export default function Chat() {
   const [transcript, setTranscript] = useState<string>("");
   const [savetext, setSaveText] = useState<string>(""); //投稿するテキスト
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+
+  const chatContainerRef = useRef(null); //画面のスクロールに使う
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -163,10 +165,17 @@ export default function Chat() {
     router.push(`./`); //ロードマップの画面に戻る
   };
 
+  // コンポーネントが更新されるたびに、スクロール位置を最下部に設定
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatlogInfo]); // chatlogInfoが更新されるたびに効果が再実行されます
+
   return (
     <main className="bg-gray-100 min-h-screen p-4  flex flex-col  items-center">
       {/* 以下、会話履歴表示部 */}
-      <div className="max-w-2xl w-full mb-4">
+      <div className="max-w-md w-full mb-4">
         <div className="flex justify-between items-center">
           <Link href={`/roadmap/${params.user_id}/${params.parent_id}`} legacyBehavior>
             <a className="text-blue-600 hover:underline">
@@ -181,10 +190,10 @@ export default function Chat() {
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold text-center">チャット</h1>
+      {/* <h1 className="text-xl font-bold text-center">チャット</h1> */}
 
       {/* 会話履歴表示部 */}
-      <div className="overflow-auto">
+      <div className="overflow-auto w-full max-w-md" style={{ maxHeight: "50vh" }} ref={chatContainerRef}>
         <ul>
           {chatlogInfo.map((log, index) => (
             <li key={index} className="mb-2 last:mb-0">
@@ -202,13 +211,13 @@ export default function Chat() {
       </div>
 
       {/* 以下、メッセージ投稿ボタン */}
-      <div className="bg-white p-4 rounded-lg shadow max-w-2xl mx-auto mb-4">
-        <h1 className="text-2xl font-bold text-center mb-4">メッセージ送信フォーム</h1>
-        <div className="flex items-center">
-          {/* テキストエリア */}
-          <textarea value={savetext} onChange={(e) => setSaveText(e.target.value)} placeholder="メッセージを入力してください" rows="4" className="textarea textarea-bordered h-36 flex-grow mr-4" />
+      {/* 以下、メッセージ投稿フォーム */}
+      <div className="fixed bottom-0 w-full bg-white p-4 rounded-t-lg shadow max-w-md mx-auto">
+        <h1 className="text-xl font-bold text-center mb-4">メッセージ送信フォーム</h1>
 
-          {/* マイクアイコン */}
+        {/* テキストエリアとマイクアイコン */}
+        <div className="flex items-center mb-4">
+          <textarea value={savetext} onChange={(e) => setSaveText(e.target.value)} placeholder="メッセージを入力してください" rows="3" className="textarea textarea-bordered flex-grow mr-4" />
           <button
             onClick={() => {
               setIsRecording((prev) => !prev); // 録音の状態を切り替える
@@ -219,17 +228,17 @@ export default function Chat() {
             <img src={isRecording ? "/Microphone_R.svg" : "/Microphone_B.svg"} alt={isRecording ? "録音を停止" : "録音を開始"} />
           </button>
         </div>
-        {/* 送信ボタン */}
-        <div className="text-center mt-4">
+
+        {/* 途中経過、解析、送信ボタン */}
+        <div className="flex justify-between items-center">
+          <div>
+            <p>途中経過：{transcript}</p>
+            <p>解析：{text}</p>
+          </div>
           <button onClick={handleSubmit_post} type="submit" className="btn btn-accent">
             送信
           </button>
         </div>
-      </div>
-
-      <div className="mt-2">
-        <p>途中経過：{transcript}</p>
-        <p>解析：{text}</p>
       </div>
     </main>
   );
