@@ -39,11 +39,28 @@
 ## 補足など
 
 - DBの初期化方法
+
   - 実行するとデータが蓄積され続けるため、DBを元に戻したい時には以下を実行してください
+
   1. /backend/db_control/LifePlan.dbを削除（DBの削除）
   2. /backend/db_control/create_tables.pyを実行（新規DBの作成）
   3. /backend/make_dummy_db.pyの実行（新規DBにダミーデータを追加）
+
   - ダミーデータに関してのメモ
     - 現在のプログラムではChatSummaries, ManualSummariesにダミーデータが必須（データが０の時エラーがでる）。アプリを完成させる際には、親データを作成するタイミングで、ダミーデータの挿入まで行う必要がある。
     - ChatSummariesのダミーデータは、他のデータが挿入されるとユーザーに表示されないようにしているので、削除せずに残しておいて問題ない。
     - ManualSummariesは、一つのデータを編集・更新する設計なので、その通りにすればよい
+
+- GPTプロンプトについて
+
+  - GPTプロンプト用のDBは使用しておらず、すべて以下のファイルに記載しています。
+    - /backend/dummy_message_and_prompt.py
+  - MVP動画の際に入力したテキストは上記のファイルに記載しています
+    - 同ファイルの52行目　（１行になっているため見ずらいです）
+
+- 使用したformatterとその設定
+  - prettier：python以外（デフォルトで使用）
+    - frontend\.prettierrc.yaml :prettierの設定ファイル
+  - Black Formatter: python
+    - black formatterの設定は以下のもの
+    - "black-formatter.args": ["--line-length=200", "--skip-string-normalization"],
